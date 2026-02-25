@@ -1,3 +1,6 @@
+# 在此粘贴你的 config.yaml...
+# 或拖拽文件到编辑器区域
+# 或点击右上角"加载官网最新配置"
 # ═══════════════════════════════════════════════════════════════
 #                    TrendRadar 配置文件
 #                      Version: 2.0.0
@@ -22,7 +25,7 @@ app:
 
 
 # ===============================================================
-# 1.5 调度系统 —— 什么时间做什么事
+# 1.5 调度系统 -- 什么时间做什么事
 #
 # 通过 timeline.yaml 里定义的时间段来自动决定：
 #   - 什么时候推送通知
@@ -41,7 +44,7 @@ app:
 # ===============================================================
 schedule:
   enabled: true                         # 是否启用调度系统
-  preset: "morning_evening"             # 预设模板名称（见上方说明）
+  preset: "always_on"             # 预设模板名称（见上方说明）
 
 
 # ===============================================================
@@ -59,24 +62,75 @@ platforms:
       name: "今日头条"
     - id: "baidu"
       name: "百度热搜"
-    - id: "wallstreetcn-hot"
-      name: "华尔街见闻"
     - id: "thepaper"
       name: "澎湃新闻"
-    - id: "bilibili-hot-search"
-      name: "bilibili 热搜"
-    - id: "cls-hot"
-      name: "财联社热门"
     - id: "ifeng"
       name: "凤凰网"
-    - id: "tieba"
-      name: "贴吧"
+    - id: "cankaoxiaoxi"
+      name: "参考消息"
+    - id: "sputniknewscn"
+      name: "卫星通讯社"
+    - id: "zaobao"
+      name: "联合早报"
+    - id: "mktnews"
+      name: "MKT新闻"
+    - id: "kaopu"
+      name: "靠谱新闻"
+
+    # === 财经投资类 ===
+    - id: "wallstreetcn-hot"
+      name: "华尔街见闻 最热"
+    - id: "wallstreetcn-quick"
+      name: "华尔街见闻 快讯"
+    - id: "wallstreetcn-news"
+      name: "华尔街见闻 最新"
+    - id: "cls-hot"
+      name: "财联社热门"
+    - id: "gelonghui"
+      name: "格隆汇"
+    - id: "jin10"
+      name: "金十数据"
+    - id: "fastbull"
+      name: "快讯通"
+
+    # === 社交/短视频/娱乐类 ===
     - id: "weibo"
       name: "微博"
     - id: "douyin"
       name: "抖音"
+    - id: "bilibili-hot-search"
+      name: "bilibili 热搜"
+    - id: "tieba"
+      name: "贴吧"
     - id: "zhihu"
       name: "知乎"
+    - id: "hupu"
+      name: "虎扑"
+
+    # === 科技类平台 ===
+    - id: "ithome"
+      name: "IT之家"
+    - id: "juejin"
+      name: "掘金"
+    - id: "hackernews"
+      name: "Hacker News"
+    - id: "solidot"
+      name: "Solidot"
+    - id: "v2ex"
+      name: "V2EX"
+    - id: "nowcoder"
+      name: "牛客网"
+    - id: "pcbeta"
+      name: "远景论坛"
+    - id: "sspai"
+      name: "少数派"
+    - id: "producthunt"
+      name: "ProductHunt"
+
+    # === 其他/工具类 ===
+    - id: "chongbuluo"
+      name: "虫部落"
+
 
 
 
@@ -104,7 +158,7 @@ rss:
   freshness_filter:
     enabled: true                     # 是否启用新鲜度过滤（默认启用）
 
-    max_age_days: 3                   # 最大文章年龄（天）
+    max_age_days: 7                   # 最大文章年龄（天）
                                       # - 正整数：只推送 N 天内的文章
                                       # - 0：禁用过滤，推送所有文章
 
@@ -114,20 +168,90 @@ rss:
   # - 0：禁用此频道的新鲜度过滤，推送所有文章
   feeds:
     - id: "hacker-news"
-      name: "Hacker News"
+      name: "Hacker News(RSS)"
       url: "https://hnrss.org/frontpage"
-      # max_age_days: 1               # 示例：只推送1天内的文章
+      enable: false
 
-    - id: "ruanyifeng"
-      name: "阮一峰的网络日志"
-      url: "http://www.ruanyifeng.com/blog/atom.xml"
-      # max_age_days: 7               # 示例：推送7天内的文章（更新较慢的博客）
-    
     - id: "yahoo-finance"
-      name: "雅虎财经"
+      name: "雅虎财经(RSS)"
       url: "https://finance.yahoo.com/news/rssindex"
-      enabled: false                  # 禁用
 
+    - id: "f1-official"
+      name: "F1 官网新闻 (官方(RSS))"
+      url: "https://www.formula1.com/content/fom-website/en/latest/all.xml"
+
+    - id: "openai"
+      name: "OpenAi(RSS)"
+      url: "https://openai.com/news/rss.xml"
+
+    - id: "linuxdolatest"
+      name: "LinuxDo最新话题(RSS)"
+      url: "https://linux.do/latest.rss"
+      enabled: true
+
+    - id: "ithome"
+      name: "IT之家(RSS)"
+      url: "https://www.ithome.com/rss/"
+      enabled: false
+
+    - id: "linuxdotop"
+      name: "LinuxDo热门话题(RSS)"
+      url: "https://linux.do/top.rss"
+      enabled: true
+
+    - id: "motorsport"
+      name: "Motorsport(RSS)"
+      url: "https://me.motorsport.com/rss/f1/news/"
+
+    - id: "racingnews365-podcast"
+      name: "RacingNews365 Podcast(RSS)"
+      url: "https://rss.buzzsprout.com/1739074.rss"
+
+    - id: "f1-oversteer"
+      name: "F1 Oversteer(RSS)"
+      url: "https://f1oversteer.com/feed/"
+
+
+    - id: "bbc-world"
+      name: "BBC News - World(RSS)"
+      url: "https://feeds.bbci.co.uk/news/world/rss.xml"
+
+    - id: "bbc-tech"
+      name: "BBC News - Technology(RSS)"
+      url: "https://feeds.bbci.co.uk/news/technology/rss.xml"
+
+    - id: "bbc-chinese"
+      name: "BBC 中文网(RSS)"
+      url: "https://feeds.bbci.co.uk/zhongwen/simp/rss.xml"
+
+    - id: "solidot"
+      name: "Solidot奇客"
+      url: "https://www.solidot.org/index.rss"
+      enabled: true
+
+    - id: "techcrunch"
+      name: "TechCrunch"
+      url: "https://techcrunch.com/feed/"
+      enabled: true
+
+    - id: "the-verge"
+      name: "The Verge"
+      url: "https://www.theverge.com/rss/index.xml"
+      enabled: true
+
+    - id: "wired"
+      name: "Wired"
+      url: "https://www.wired.com/feed/rss"
+      enabled: true
+
+    - id: "arstechnica"
+      name: "Ars Technica"
+      url: "https://feeds.arstechnica.com/arstechnica/index"
+      enabled: true
+
+ 
+
+ 
     # 自定义源示例
     # - id: "custom-feed"
     #   name: "自定义源"
@@ -155,7 +279,7 @@ rss:
 #    • 适用场景：避免重复信息干扰
 # ===============================================================
 report:
-  mode: "current"                     # 可选: daily | current | incremental
+  mode: "incremental"                     # 可选: daily | current | incremental
                                       # ⚠️ 开启调度系统后，此值会被当前时间段的 report_mode 覆盖
 
 
@@ -166,7 +290,7 @@ report:
   # 关键词组排序方式（仅 display_mode: keyword 时生效）
   # true: 按 frequency_words.txt 中的定义顺序排列
   # false: 按匹配到的热点条数排序（条数多的在前）
-  sort_by_position_first: false
+  sort_by_position_first: true
 
   rank_threshold: 5                   # 排名高亮阈值
 
@@ -192,34 +316,19 @@ display:
   #   2. 下方 regions 中对应开关为 true
   region_order:
     - new_items                       # 1️⃣ 新增热点区域
-    - hotlist                         # 2️⃣ 热榜区域（关键词匹配）
-    - rss                             # 3️⃣ RSS 订阅区域
-    - standalone                      # 4️⃣ 独立展示区
-    - ai_analysis                     # 5️⃣ AI 分析区域
-
-  # 推送区域开关
-  # 控制各区域是否启用（配合 region_order 使用）
+    - rss                       # 3️⃣ RSS 订阅区域
+    - hotlist                       # 2️⃣ 热榜区域（关键词匹配）
+    - standalone                       # 4️⃣ 独立展示区
+    - ai_analysis                       # 5️⃣ AI 分析区域
   regions:
-    hotlist: true                     # 热榜区域（关键词匹配的热点新闻）
-    new_items: false                   # 新增热点区域（含热榜新增 + RSS 新增）
-                                      # 注：热点词汇统计中的新增标记🆕不受此配置影响
-
-    rss: true                         # RSS 订阅区域
-                                      # 开启后将对 RSS 进行关键词分析并在通知中展示
-                                      # 关闭后跳过分析，但独立展示区不受影响
-
-    standalone: false                 # 独立展示区（完整热榜/RSS，不受关键词过滤）
-    ai_analysis: true                 # AI 分析区域
-
-  # 📋 独立展示区配置
-  # 用途：将指定平台的完整热榜/RSS 数据独立提取，不受关键词过滤影响
-  # 两个独立用途：
-  #   - 推送展示：由 regions.standalone 开关控制，在推送中单独展示完整热榜
-  #   - AI 分析：由 ai.include_standalone 开关控制，将完整数据送入 AI 做深度分析
-  # 两者共享此处的平台/RSS 配置，但开关互相独立（可只开 AI 分析、不推送展示）
+    ai_analysis: true # AI 分析区域
+    new_items: true # 新增热点区域（含热榜新增 + RSS 新增）
+    rss: true # RSS 订阅区域
+    hotlist: true # 热榜区域（关键词匹配的热点新闻）
+    standalone: false # 独立展示区（完整热榜/RSS，不受关键词过滤）
   standalone:
-    platforms: ["zhihu", "wallstreetcn-hot"]     # 热榜平台 ID 列表（如 ["zhihu", "weibo"]）
-    rss_feeds: []                     # RSS 源 ID 列表（如 ["hacker-news"]）
+    platforms: [] # 热榜平台 ID 列表（如 ["zhihu", "weibo"]）
+    rss_feeds: ["ruanyifeng","linuxdo","motorsport_f1"] # RSS 源 ID 列表（如 ["hacker-news"]）
     max_items: 20                     # 每个源最多展示条数（0=不限制）
 
 
@@ -259,7 +368,7 @@ notification:
 
     wework:
       webhook_url: ""                 # 企业微信机器人 webhook URL
-      msg_type: "markdown"            # 消息类型：markdown(群机器人) | text(个人微信应用)
+      msg_type: ""                # 消息类型：markdown(群机器人) | text(个人微信应用)
 
     telegram:
       bot_token: ""                   # Telegram Bot Token
@@ -303,13 +412,13 @@ storage:
   # 数据格式选项
   formats:
     sqlite: true                      # 主存储（必须启用）
-    txt: false                        # 是否生成 TXT 快照
+    txt: true                        # 是否生成 TXT 快照
     html: true                       # 是否生成 HTML 报告（⚠️ 邮件推送或者需要看网页版报告必须设为 true）
 
   # 本地存储配置
   local:
     data_dir: "output"                # 数据目录
-    retention_days: 0                 # 保留天数（0=永久保留）
+    retention_days: 30                 # 保留天数（0=永久保留）
 
   # 远程存储配置（S3 兼容协议）
   # 支持: Cloudflare R2, 阿里云 OSS, 腾讯云 COS, AWS S3, MinIO 等
@@ -331,7 +440,7 @@ storage:
   # 用于 MCP Server 等场景：爬虫存到远程，MCP 拉取到本地分析
   pull:
     enabled: false                    # 是否启用启动时自动拉取
-    days: 7                           # 拉取最近 N 天的数据
+    days: 2                           # 拉取最近 N 天的数据
 
 
 # ===============================================================
@@ -349,13 +458,13 @@ ai:
   #   - anthropic/claude-3-5-sonnet (Anthropic)
   #   - ollama/llama3 (本地 Ollama)
   # 完整列表: https://docs.litellm.ai/docs/providers
-  # 如果你对于看英文文档比较头疼，那么可以点击页面右下角的 【Ask AI】 ,用中文询问怎么配置 
-  
-  model: "deepseek/deepseek-chat"
+  # 如果你对于看英文文档比较头疼，那么可以点击页面右下角的 【Ask AI】 ,用中文询问怎么配置
 
-  api_key: ""                       # API Key（建议使用环境变量 AI_API_KEY）
-  
-  api_base: ""                      # 自定义 API 端点（可选，大多数情况留空）
+  model: "deepseek-r1"
+
+  api_key: "sk-2fbe9a6019b3a6240927f2df0a45b3cf"                       # API Key（建议使用环境变量 AI_API_KEY）
+
+  api_base: "https://apis.iflow.cn/v1"                      # 自定义 API 端点（可选，大多数情况留空）
                                     # 示例: https://api.openai.com/v1（自建代理或兼容接口）
                                     #
                                     # 💡 超级重要：连接任意兼容 OpenAI 协议的模型商
@@ -369,12 +478,12 @@ ai:
                                     #    (原理：前缀 openai/ 强制 LiteLLM 使用 OpenAI 协议格式进行通信)
 
 
-  timeout: 120                      # 请求超时（秒）
+  timeout: 180                      # 请求超时（秒）
 
-  temperature: 1.0                  # 采样温度 (0.0-2.0)
+  temperature: 0                  # 采样温度 (0.0-2.0)
                                     # 注意：部分模型(如 gpt-5)可能要求必须为 1.0，否则会报错
-  
-  max_tokens: 5000                  # 最大生成 token 数
+
+  max_tokens: 8192                  # 最大生成 token 数
                                     # 注意：如果 API 不支持此参数(报 HTTP 400)，请设为 0 以禁用发送
   # 高级选项
   num_retries: 1                    # 失败重试次数
@@ -412,7 +521,7 @@ ai_analysis:
   # 分析报告输出语言
   # 格式：自然语言描述
   # 示例: "English", "Korean", "法语"
-  language: "Chinese"
+  language: "中文"
 
   # 提示词配置文件路径（相对于 config 目录）
   prompt_file: "ai_analysis_prompt.txt"
@@ -431,7 +540,7 @@ ai_analysis:
   mode: "follow_report"
 
   # 分析内容配置
-  max_news_for_analysis: 150        # 热榜+RSS 合计参与分析的新闻数量上限（控制成本关键项）
+  max_news_for_analysis: 200        # 热榜+RSS 合计参与分析的新闻数量上限（控制成本关键项）
                                     # 热榜优先占用配额，RSS 使用剩余配额；独立展示区不受此限制
                                     # 推送消息顶部会显示实际的 AI 分析数供参考
 
@@ -443,8 +552,8 @@ ai_analysis:
                                       # GitHub Action 部署默认推送约 20 次（每小时推送一次）， 约 0.1 元/天
                                       # Docker 部署默认推送 48 次(每半小时推送一次)， 约 0.2 元/天
 
-  include_rss: false                # 是否包含 RSS 内容进行分析
-  
+  include_rss: true                # 是否包含 RSS 内容进行分析
+
   include_standalone: true          # 是否将独立展示区数据纳入 AI 分析（只需上方 display 区的 standalone 配置了平台/RSS 即可）
 
   include_rank_timeline: true       # 是否传递完整排名时间线
@@ -458,16 +567,16 @@ ai_analysis:
 # ===============================================================
 # 10. AI 翻译功能
 #
-# 对推送内容进行多语言翻译，不包含 ai_analysis 分析的内容 
+# 对推送内容进行多语言翻译，不包含 ai_analysis 分析的内容
 # 模型配置见上方 ai 配置段
 # ===============================================================
 ai_translation:
-  enabled: false                    # 是否启用翻译功能
+  enabled: true                    # 是否启用翻译功能
 
   # 翻译目标语言
   # 格式：自然语言描述
   # 示例: "Chinese", "Korean", "法语"
-  language: "中文"
+  language: "简体中文"
 
   # 提示词配置文件路径（相对于 config 目录）
   prompt_file: "ai_translation_prompt.txt"
@@ -487,16 +596,16 @@ advanced:
 
   # 热榜爬虫技术参数
   crawler:
-    request_interval: 2000            # 请求间隔（毫秒）
-    use_proxy: false                  # 是否启用代理
-    default_proxy: "http://127.0.0.1:10801"
+    request_interval: 1000            # 请求间隔（毫秒）
+    use_proxy: true                  # 是否启用代理
+    default_proxy: "http://192.168.5.6:30001"
 
   # RSS 设置
   rss:
     request_interval: 1000            # 请求间隔（毫秒）
     timeout: 15                       # 请求超时（秒）
-    use_proxy: false                  # 是否使用代理
-    proxy_url: ""                     # RSS 专属代理（留空则使用 crawler.default_proxy）
+    use_proxy: true                  # 是否使用代理
+    proxy_url: "http://192.168.5.6:30001"                     # RSS 专属代理（留空则使用 crawler.default_proxy）
 
   # 排序权重（用于重新排序不同平台的热搜）
   # 合起来等于 1
@@ -517,3 +626,5 @@ advanced:
     slack: 4000
   batch_send_interval: 3              # 批次发送间隔（秒）
   feishu_message_separator: "━━━━━━━━━━━━━━━━"
+
+
