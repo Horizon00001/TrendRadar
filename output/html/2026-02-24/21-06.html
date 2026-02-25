@@ -1,0 +1,1695 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>热点新闻分析</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <style>
+            * { box-sizing: border-box; }
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+                margin: 0;
+                padding: 16px;
+                background: #fafafa;
+                color: #333;
+                line-height: 1.5;
+            }
+
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+                background: white;
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+            }
+
+            .header {
+                background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+                color: white;
+                padding: 32px 24px;
+                text-align: center;
+                position: relative;
+            }
+
+            .save-buttons {
+                position: absolute;
+                top: 16px;
+                right: 16px;
+                display: flex;
+                gap: 8px;
+            }
+
+            .save-btn {
+                background: rgba(255, 255, 255, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                color: white;
+                padding: 8px 16px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 13px;
+                font-weight: 500;
+                transition: all 0.2s ease;
+                backdrop-filter: blur(10px);
+                white-space: nowrap;
+            }
+
+            .save-btn:hover {
+                background: rgba(255, 255, 255, 0.3);
+                border-color: rgba(255, 255, 255, 0.5);
+                transform: translateY(-1px);
+            }
+
+            .save-btn:active {
+                transform: translateY(0);
+            }
+
+            .save-btn:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+
+            .header-title {
+                font-size: 22px;
+                font-weight: 700;
+                margin: 0 0 20px 0;
+            }
+
+            .header-info {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+                font-size: 14px;
+                opacity: 0.95;
+            }
+
+            .info-item {
+                text-align: center;
+            }
+
+            .info-label {
+                display: block;
+                font-size: 12px;
+                opacity: 0.8;
+                margin-bottom: 4px;
+            }
+
+            .info-value {
+                font-weight: 600;
+                font-size: 16px;
+            }
+
+            .content {
+                padding: 24px;
+            }
+
+            .word-group {
+                margin-bottom: 40px;
+            }
+
+            .word-group:first-child {
+                margin-top: 0;
+            }
+
+            .word-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 20px;
+                padding-bottom: 8px;
+                border-bottom: 1px solid #f0f0f0;
+            }
+
+            .word-info {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .word-name {
+                font-size: 17px;
+                font-weight: 600;
+                color: #1a1a1a;
+            }
+
+            .word-count {
+                color: #666;
+                font-size: 13px;
+                font-weight: 500;
+            }
+
+            .word-count.hot { color: #dc2626; font-weight: 600; }
+            .word-count.warm { color: #ea580c; font-weight: 600; }
+
+            .word-index {
+                color: #999;
+                font-size: 12px;
+            }
+
+            .news-item {
+                margin-bottom: 20px;
+                padding: 16px 0;
+                border-bottom: 1px solid #f5f5f5;
+                position: relative;
+                display: flex;
+                gap: 12px;
+                align-items: center;
+            }
+
+            .news-item:last-child {
+                border-bottom: none;
+            }
+
+            .news-item.new::after {
+                content: "NEW";
+                position: absolute;
+                top: 12px;
+                right: 0;
+                background: #fbbf24;
+                color: #92400e;
+                font-size: 9px;
+                font-weight: 700;
+                padding: 3px 6px;
+                border-radius: 4px;
+                letter-spacing: 0.5px;
+            }
+
+            .news-number {
+                color: #999;
+                font-size: 13px;
+                font-weight: 600;
+                min-width: 20px;
+                text-align: center;
+                flex-shrink: 0;
+                background: #f8f9fa;
+                border-radius: 50%;
+                width: 24px;
+                height: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                align-self: flex-start;
+                margin-top: 8px;
+            }
+
+            .news-content {
+                flex: 1;
+                min-width: 0;
+                padding-right: 40px;
+            }
+
+            .news-item.new .news-content {
+                padding-right: 50px;
+            }
+
+            .news-header {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 8px;
+                flex-wrap: wrap;
+            }
+
+            .source-name {
+                color: #666;
+                font-size: 12px;
+                font-weight: 500;
+            }
+
+            .keyword-tag {
+                color: #2563eb;
+                font-size: 12px;
+                font-weight: 500;
+                background: #eff6ff;
+                padding: 2px 6px;
+                border-radius: 4px;
+            }
+
+            .rank-num {
+                color: #fff;
+                background: #6b7280;
+                font-size: 10px;
+                font-weight: 700;
+                padding: 2px 6px;
+                border-radius: 10px;
+                min-width: 18px;
+                text-align: center;
+            }
+
+            .rank-num.top { background: #dc2626; }
+            .rank-num.high { background: #ea580c; }
+
+            .time-info {
+                color: #999;
+                font-size: 11px;
+            }
+
+            .count-info {
+                color: #059669;
+                font-size: 11px;
+                font-weight: 500;
+            }
+
+            .news-title {
+                font-size: 15px;
+                line-height: 1.4;
+                color: #1a1a1a;
+                margin: 0;
+            }
+
+            .news-link {
+                color: #2563eb;
+                text-decoration: none;
+            }
+
+            .news-link:hover {
+                text-decoration: underline;
+            }
+
+            .news-link:visited {
+                color: #7c3aed;
+            }
+
+            /* 通用区域分割线样式 */
+            .section-divider {
+                margin-top: 32px;
+                padding-top: 24px;
+                border-top: 2px solid #e5e7eb;
+            }
+
+            /* 热榜统计区样式 */
+            .hotlist-section {
+                /* 默认无边框，由 section-divider 动态添加 */
+            }
+
+            .new-section {
+                margin-top: 40px;
+                padding-top: 24px;
+            }
+
+            .new-section-title {
+                color: #1a1a1a;
+                font-size: 16px;
+                font-weight: 600;
+                margin: 0 0 20px 0;
+            }
+
+            .new-source-group {
+                margin-bottom: 24px;
+            }
+
+            .new-source-title {
+                color: #666;
+                font-size: 13px;
+                font-weight: 500;
+                margin: 0 0 12px 0;
+                padding-bottom: 6px;
+                border-bottom: 1px solid #f5f5f5;
+            }
+
+            .new-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 8px 0;
+                border-bottom: 1px solid #f9f9f9;
+            }
+
+            .new-item:last-child {
+                border-bottom: none;
+            }
+
+            .new-item-number {
+                color: #999;
+                font-size: 12px;
+                font-weight: 600;
+                min-width: 18px;
+                text-align: center;
+                flex-shrink: 0;
+                background: #f8f9fa;
+                border-radius: 50%;
+                width: 20px;
+                height: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .new-item-rank {
+                color: #fff;
+                background: #6b7280;
+                font-size: 10px;
+                font-weight: 700;
+                padding: 3px 6px;
+                border-radius: 8px;
+                min-width: 20px;
+                text-align: center;
+                flex-shrink: 0;
+            }
+
+            .new-item-rank.top { background: #dc2626; }
+            .new-item-rank.high { background: #ea580c; }
+
+            .new-item-content {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .new-item-title {
+                font-size: 14px;
+                line-height: 1.4;
+                color: #1a1a1a;
+                margin: 0;
+            }
+
+            .error-section {
+                background: #fef2f2;
+                border: 1px solid #fecaca;
+                border-radius: 8px;
+                padding: 16px;
+                margin-bottom: 24px;
+            }
+
+            .error-title {
+                color: #dc2626;
+                font-size: 14px;
+                font-weight: 600;
+                margin: 0 0 8px 0;
+            }
+
+            .error-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .error-item {
+                color: #991b1b;
+                font-size: 13px;
+                padding: 2px 0;
+                font-family: 'SF Mono', Consolas, monospace;
+            }
+
+            .footer {
+                margin-top: 32px;
+                padding: 20px 24px;
+                background: #f8f9fa;
+                border-top: 1px solid #e5e7eb;
+                text-align: center;
+            }
+
+            .footer-content {
+                font-size: 13px;
+                color: #6b7280;
+                line-height: 1.6;
+            }
+
+            .footer-link {
+                color: #4f46e5;
+                text-decoration: none;
+                font-weight: 500;
+                transition: color 0.2s ease;
+            }
+
+            .footer-link:hover {
+                color: #7c3aed;
+                text-decoration: underline;
+            }
+
+            .project-name {
+                font-weight: 600;
+                color: #374151;
+            }
+
+            @media (max-width: 480px) {
+                body { padding: 12px; }
+                .header { padding: 24px 20px; }
+                .content { padding: 20px; }
+                .footer { padding: 16px 20px; }
+                .header-info { grid-template-columns: 1fr; gap: 12px; }
+                .news-header { gap: 6px; }
+                .news-content { padding-right: 45px; }
+                .news-item { gap: 8px; }
+                .new-item { gap: 8px; }
+                .news-number { width: 20px; height: 20px; font-size: 12px; }
+                .save-buttons {
+                    position: static;
+                    margin-bottom: 16px;
+                    display: flex;
+                    gap: 8px;
+                    justify-content: center;
+                    flex-direction: column;
+                    width: 100%;
+                }
+                .save-btn {
+                    width: 100%;
+                }
+            }
+
+            /* RSS 订阅内容样式 */
+            .rss-section {
+                margin-top: 32px;
+                padding-top: 24px;
+            }
+
+            .rss-section-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 20px;
+            }
+
+            .rss-section-title {
+                font-size: 18px;
+                font-weight: 600;
+                color: #059669;
+            }
+
+            .rss-section-count {
+                color: #6b7280;
+                font-size: 14px;
+            }
+
+            .feed-group {
+                margin-bottom: 24px;
+            }
+
+            .feed-group:last-child {
+                margin-bottom: 0;
+            }
+
+            .feed-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 12px;
+                padding-bottom: 8px;
+                border-bottom: 2px solid #10b981;
+            }
+
+            .feed-name {
+                font-size: 15px;
+                font-weight: 600;
+                color: #059669;
+            }
+
+            .feed-count {
+                color: #666;
+                font-size: 13px;
+                font-weight: 500;
+            }
+
+            .rss-item {
+                margin-bottom: 12px;
+                padding: 14px;
+                background: #f0fdf4;
+                border-radius: 8px;
+                border-left: 3px solid #10b981;
+            }
+
+            .rss-item:last-child {
+                margin-bottom: 0;
+            }
+
+            .rss-meta {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 6px;
+                flex-wrap: wrap;
+            }
+
+            .rss-time {
+                color: #6b7280;
+                font-size: 12px;
+            }
+
+            .rss-author {
+                color: #059669;
+                font-size: 12px;
+                font-weight: 500;
+            }
+
+            .rss-title {
+                font-size: 14px;
+                line-height: 1.5;
+                margin-bottom: 6px;
+            }
+
+            .rss-link {
+                color: #1f2937;
+                text-decoration: none;
+                font-weight: 500;
+            }
+
+            .rss-link:hover {
+                color: #059669;
+                text-decoration: underline;
+            }
+
+            .rss-summary {
+                font-size: 13px;
+                color: #6b7280;
+                line-height: 1.5;
+                margin: 0;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+
+            /* 独立展示区样式 - 复用热点词汇统计区样式 */
+            .standalone-section {
+                margin-top: 32px;
+                padding-top: 24px;
+            }
+
+            .standalone-section-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 20px;
+            }
+
+            .standalone-section-title {
+                font-size: 18px;
+                font-weight: 600;
+                color: #059669;
+            }
+
+            .standalone-section-count {
+                color: #6b7280;
+                font-size: 14px;
+            }
+
+            .standalone-group {
+                margin-bottom: 40px;
+            }
+
+            .standalone-group:last-child {
+                margin-bottom: 0;
+            }
+
+            .standalone-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 20px;
+                padding-bottom: 8px;
+                border-bottom: 1px solid #f0f0f0;
+            }
+
+            .standalone-name {
+                font-size: 17px;
+                font-weight: 600;
+                color: #1a1a1a;
+            }
+
+            .standalone-count {
+                color: #666;
+                font-size: 13px;
+                font-weight: 500;
+            }
+
+            /* AI 分析区块样式 */
+            .ai-section {
+                margin-top: 32px;
+                padding: 24px;
+                background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+                border-radius: 12px;
+                border: 1px solid #bae6fd;
+            }
+
+            .ai-section-header {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+
+            .ai-section-title {
+                font-size: 18px;
+                font-weight: 600;
+                color: #0369a1;
+            }
+
+            .ai-section-badge {
+                background: #0ea5e9;
+                color: white;
+                font-size: 11px;
+                font-weight: 600;
+                padding: 3px 8px;
+                border-radius: 4px;
+            }
+
+            .ai-block {
+                margin-bottom: 16px;
+                padding: 16px;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            }
+
+            .ai-block:last-child {
+                margin-bottom: 0;
+            }
+
+            .ai-block-title {
+                font-size: 14px;
+                font-weight: 600;
+                color: #0369a1;
+                margin-bottom: 8px;
+            }
+
+            .ai-block-content {
+                font-size: 14px;
+                line-height: 1.6;
+                color: #334155;
+                white-space: pre-wrap;
+            }
+
+            .ai-error {
+                padding: 16px;
+                background: #fef2f2;
+                border: 1px solid #fecaca;
+                border-radius: 8px;
+                color: #991b1b;
+                font-size: 14px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <div class="save-buttons">
+                    <button class="save-btn" onclick="saveAsImage()">保存为图片</button>
+                    <button class="save-btn" onclick="saveAsMultipleImages()">分段保存</button>
+                </div>
+                <div class="header-title">热点新闻分析</div>
+                <div class="header-info">
+                    <div class="info-item">
+                        <span class="info-label">报告类型</span>
+                        <span class="info-value">增量分析</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">新闻总数</span>
+                        <span class="info-value">161 条</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">热点新闻</span>
+                        <span class="info-value">44 条</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">生成时间</span>
+                        <span class="info-value">02-24 21:06</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="rss-section">
+                    <div class="rss-section-header">
+                        <div class="rss-section-title">RSS 订阅更新</div>
+                        <div class="rss-section-count">17 条</div>
+                    </div>
+                    <div class="feed-group">
+                        <div class="feed-header">
+                            <div class="feed-name">AI</div>
+                            <div class="feed-count">6 条</div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">02-24 20:48</span><span class="rss-author">LinuxDo最新话题(RSS)</span><span class="rss-author" style="color: #dc2626;">NEW</span>
+                            </div>
+                            <div class="rss-title"><a href="https://linux.do/t/topic/1642766" target="_blank" class="rss-link">目前的一些AI订阅</a>
+                            </div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">02-24 20:24</span><span class="rss-author">雅虎财经(RSS)</span><span class="rss-author" style="color: #dc2626;">NEW</span>
+                            </div>
+                            <div class="rss-title"><a href="https://finance.yahoo.com/news/factbox-openai-nvidia-firms-channel-122400217.html" target="_blank" class="rss-link">Factbox-From OpenAI to Nvidia, firms channel billions into AI infrastructure as demand booms</a>
+                            </div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">02-24 20:24</span><span class="rss-author">雅虎财经(RSS)</span><span class="rss-author" style="color: #dc2626;">NEW</span>
+                            </div>
+                            <div class="rss-title"><a href="https://www.barrons.com/articles/amd-stock-meta-deal-chips-ai-cee1fa34?siteid=yhoof2&amp;yptr=yahoo" target="_blank" class="rss-link">AMD Stock Surges After AI Chip Maker Agrees Meta Deal</a>
+                            </div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">02-24 20:19</span><span class="rss-author">雅虎财经(RSS)</span><span class="rss-author" style="color: #dc2626;">NEW</span>
+                            </div>
+                            <div class="rss-title"><a href="https://finance.yahoo.com/news/skittish-investors-spooked-dystopian-ai-121916284.html" target="_blank" class="rss-link">Skittish investors spooked as dystopian AI outlooks go viral</a>
+                            </div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">02-24 20:00</span><span class="rss-author">雅虎财经(RSS)</span><span class="rss-author" style="color: #dc2626;">NEW</span>
+                            </div>
+                            <div class="rss-title"><a href="https://finance.yahoo.com/news/meta-and-amd-announce-6-gigawatt-gpu-deal-as-part-of-ai-buildout-120013754.html" target="_blank" class="rss-link">Meta and AMD announce 6-gigawatt GPU deal as part of AI buildout</a>
+                            </div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">02-24 19:56</span><span class="rss-author">雅虎财经(RSS)</span><span class="rss-author" style="color: #dc2626;">NEW</span>
+                            </div>
+                            <div class="rss-title"><a href="https://finance.yahoo.com/news/morning-bid-ai-doom-tariff-115611903.html" target="_blank" class="rss-link">Morning Bid: AI doom and tariff gloom</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feed-group">
+                        <div class="feed-header">
+                            <div class="feed-name">国产模型</div>
+                            <div class="feed-count">1 条</div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">02-24 20:59</span><span class="rss-author">LinuxDo最新话题(RSS)</span><span class="rss-author" style="color: #dc2626;">NEW</span>
+                            </div>
+                            <div class="rss-title"><a href="https://linux.do/t/topic/1642797" target="_blank" class="rss-link">喜报，阿里Coding Plan支持glm5啦！</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feed-group">
+                        <div class="feed-header">
+                            <div class="feed-name">英伟达</div>
+                            <div class="feed-count">1 条</div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">02-24 20:30</span><span class="rss-author">雅虎财经(RSS)</span><span class="rss-author" style="color: #dc2626;">NEW</span>
+                            </div>
+                            <div class="rss-title"><a href="https://finance.yahoo.com/news/prediction-markets-95-sure-nvidia-123000550.html" target="_blank" class="rss-link">Prediction Markets Are 95% Sure Nvidia Will Beat Earnings -- Here&#x27;s What That Means for Investors</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feed-group">
+                        <div class="feed-header">
+                            <div class="feed-name">AMD</div>
+                            <div class="feed-count">1 条</div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">02-24 20:01</span><span class="rss-author">雅虎财经(RSS)</span><span class="rss-author" style="color: #dc2626;">NEW</span>
+                            </div>
+                            <div class="rss-title"><a href="https://finance.yahoo.com/news/amd-clinches-second-mega-chip-120122612.html" target="_blank" class="rss-link">AMD clinches second mega chip supply deal, this time with Meta</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feed-group">
+                        <div class="feed-header">
+                            <div class="feed-name">微软</div>
+                            <div class="feed-count">2 条</div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">02-24 20:56</span><span class="rss-author">LinuxDo最新话题(RSS)</span><span class="rss-author" style="color: #dc2626;">NEW</span>
+                            </div>
+                            <div class="rss-title"><a href="https://linux.do/t/topic/1642792" target="_blank" class="rss-link">兄弟们，我发现 PS5 装 Windows 是条发财之路</a>
+                            </div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">02-24 19:59</span><span class="rss-author">雅虎财经(RSS)</span><span class="rss-author" style="color: #dc2626;">NEW</span>
+                            </div>
+                            <div class="rss-title"><a href="https://finance.yahoo.com/news/microsoft-msft-needs-refresh-says-115900097.html" target="_blank" class="rss-link">Microsoft (MSFT) Needs a Refresh, Says Jim Cramer</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feed-group">
+                        <div class="feed-header">
+                            <div class="feed-name">OpenAI</div>
+                            <div class="feed-count">2 条</div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">02-24 21:03</span><span class="rss-author">LinuxDo最新话题(RSS)</span><span class="rss-author" style="color: #dc2626;">NEW</span>
+                            </div>
+                            <div class="rss-title"><a href="https://linux.do/t/topic/1642811" target="_blank" class="rss-link">openclaw我能说什么 现在炮打也没用</a>
+                            </div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">02-24 20:44</span><span class="rss-author">LinuxDo最新话题(RSS)</span><span class="rss-author" style="color: #dc2626;">NEW</span>
+                            </div>
+                            <div class="rss-title"><a href="https://linux.do/t/topic/1642755" target="_blank" class="rss-link">openclaw更新错误 排查技巧</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feed-group">
+                        <div class="feed-header">
+                            <div class="feed-name">Claude</div>
+                            <div class="feed-count">1 条</div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">02-24 20:52</span><span class="rss-author">LinuxDo最新话题(RSS)</span><span class="rss-author" style="color: #dc2626;">NEW</span>
+                            </div>
+                            <div class="rss-title"><a href="https://linux.do/t/topic/1642779" target="_blank" class="rss-link">Claude Code Cli命令行回答速度很慢怎么破</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feed-group">
+                        <div class="feed-header">
+                            <div class="feed-name">港澳台</div>
+                            <div class="feed-count">1 条</div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">02-24 20:16</span><span class="rss-author">BBC News - World(RSS)</span><span class="rss-author" style="color: #dc2626;">NEW</span>
+                            </div>
+                            <div class="rss-title"><a href="https://www.bbc.com/news/articles/c2k8z9v3334o?at_medium=RSS&amp;at_campaign=rss" target="_blank" class="rss-link">Hong Kong lodges &#x27;strong protest&#x27; after Panama takes control of canal ports</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feed-group">
+                        <div class="feed-header">
+                            <div class="feed-name">F1</div>
+                            <div class="feed-count">2 条</div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">02-24 21:00</span><span class="rss-author">F1 Oversteer(RSS)</span><span class="rss-author" style="color: #dc2626;">NEW</span>
+                            </div>
+                            <div class="rss-title"><a href="https://www.f1oversteer.com/news/zak-brown-details-how-lando-norris-has-matured-in-handling-setbacks-since-his-rookie-f1-season/" target="_blank" class="rss-link">Zak Brown details how Lando Norris has ‘matured’ in handling setbacks since his rookie F1 season</a>
+                            </div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">02-24 20:30</span><span class="rss-author">F1 Oversteer(RSS)</span><span class="rss-author" style="color: #dc2626;">NEW</span>
+                            </div>
+                            <div class="rss-title"><a href="https://www.f1oversteer.com/news/formula-1-will-never-return-to-the-european-circuit-that-oscar-piastri-would-love-to-see-come-back/" target="_blank" class="rss-link">Report: Formula 1 will ‘never’ return to the European circuit that Oscar Piastri would love to see come back</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="section-divider hotlist-section">
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">AI</div>
+                            <div class="word-count hot">17 条</div>
+                        </div>
+                        <div class="word-index">1/8</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">华尔街见闻 快讯</span><span class="rank-num top">2</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/livenews/3058136" target="_blank" class="news-link">Arini创始人：无需颠覆真正发生 对AI的忧虑便足以引发软件公司违约</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">格隆汇</span><span class="rank-num top">2</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.gelonghui.com/news/5174564" target="_blank" class="news-link">「双一亿」杀出春节AI混战，是时候重估蚂蚁了</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">格隆汇</span><span class="rank-num top">3</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.gelonghui.com/news/5174563" target="_blank" class="news-link">民德电子(300656.SZ)：暂无生产存储或者ai芯片相关的产品</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">4</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">IT之家</span><span class="rank-num high">5</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.ithome.com/0/923/323.htm" target="_blank" class="news-link">AMD 宣布与 Meta 扩大战略合作伙伴关系：将部署 6 吉瓦 GPU 以加速 AI 基建，股价暴涨 15%</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">5</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">MKT新闻</span><span class="rank-num ">6</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019c8f9a-935a-7118-bcf9-2140a691357a" target="_blank" class="news-link">Crypto Drops Amid AI, Tariff Concerns; Bitcoin Falls to $63K</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">6</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">华尔街见闻 快讯</span><span class="rank-num ">9</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/livenews/3058124" target="_blank" class="news-link">AMD美股盘前涨超15%，META与AMD签署巨额协议，将购买后者AI设备。</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">7</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">MKT新闻</span><span class="rank-num ">10</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019c8f8b-6e6a-7118-bcf9-01c91a755a8e" target="_blank" class="news-link">Meta and AMD Agree to AI Chips Deal Worth More Than $100 Billion</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">8</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">华尔街见闻 快讯</span><span class="rank-num ">10</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/livenews/3058122" target="_blank" class="news-link">META与AMD签署巨额协议，将购买后者AI设备。META将获得认股权证，可分阶段购买不超1.6亿股AMD股票。META将在AMD设备上花费每吉瓦数百亿美元。（彭博）</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">9</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">IT之家</span><span class="rank-num ">10</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.ithome.com/0/923/318.htm" target="_blank" class="news-link">SambaNova 发布第五代 RDU AI 芯片，与英特尔达成多年期合作</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">10</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">MKT新闻</span><span class="rank-num ">11</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019c8f88-a50c-7118-bcf8-f91fde256a83" target="_blank" class="news-link">AMD SHARES JUMP 10.9% PREMARKET AFTER CO AGREES TO SELL UP TO $60 BLN WORTH OF AI CHIPS TO META</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">11</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">知乎</span><span class="rank-num ">18</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.zhihu.com/question/41253586" target="_blank" class="news-link">未来有什么工作绝对不会被人工智能（AI）取代？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">12</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">牛客网</span><span class="rank-num ">19</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.nowcoder.com/feed/main/detail/f4bf94ebaa724cc5ac704f8237863181" target="_blank" class="news-link">总结下秋招被问到的关于AI的面试题</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">13</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">MKT新闻</span><span class="rank-num ">19</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019c8f85-e664-7118-bcf8-be06833d9cb2" target="_blank" class="news-link">META AND AMD AGREE TO AI CHIPS DEAL WORTH MORE THAN $100 BILLION -- WSJ</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">14</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">金十数据</span><span class="rank-num ">22</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://flash.jin10.com/detail/20260224200932075800" target="_blank" class="news-link">AMD宣布与Meta扩大战略合作 将向Meta部署6吉瓦定制AI芯片</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">15</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">金十数据</span><span class="rank-num ">23</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://flash.jin10.com/detail/20260224200638377800" target="_blank" class="news-link">AMD(AMD.O)美股盘前涨幅扩大至15%，此前与META达成AI设备和股份交易协议。</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">16</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">金十数据</span><span class="rank-num ">27</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://flash.jin10.com/detail/20260224200259353800" target="_blank" class="news-link">AMD(AMD.O)盘前大涨10.9%，此前该公司同意五年内向Meta公司出售价值高达600亿美元的AI芯片。</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">17</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">金十数据</span><span class="rank-num ">28</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://flash.jin10.com/detail/20260224200244367800" target="_blank" class="news-link">市场消息：Meta Platforms(META.O)与AMD(AMD.O)达成重磅协议，斥资数十亿美元采购人工智能设备。</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">AMD</div>
+                            <div class="word-count hot">10 条</div>
+                        </div>
+                        <div class="word-index">2/8</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">MKT新闻</span><span class="rank-num ">9</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019c8f8e-db61-7118-bcf9-09db950ba0fa" target="_blank" class="news-link">&lt;b&gt;BROADCOM SHARES SLIP 0.8% PREMARKET AFTER AMD CLINCHES DEAL WITH META&lt;/b&gt;</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">MKT新闻</span><span class="rank-num ">14</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019c8f87-f01e-7118-bcf8-e2e63064f1cf" target="_blank" class="news-link">&lt;b&gt;ADVANCED MICRO DEVICES: ISSUED META A PERFORMANCE-BASED WARRANT FOR UP TO 160 MLN SHARES OF AMD COMMON STOCK&lt;/b&gt;</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">MKT新闻</span><span class="rank-num ">16</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019c8f87-52ab-7118-bcf8-d6940f8f168a" target="_blank" class="news-link">AMD AND META ANNOUNCE EXPANDED STRATEGIC PARTNERSHIP TO DEPLOY 6 GIGAWATTS OF AMD GPUS</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">4</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">MKT新闻</span><span class="rank-num ">17</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019c8f86-5dd7-7118-bcf8-c987ffc066f4" target="_blank" class="news-link">AMD AGREES TO SELL UP TO $60 BILLION WORTH OF ARTIFICIAL INTELLIGENCE CHIPS TO META OVER FIVE YEARS</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">5</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">MKT新闻</span><span class="rank-num ">18</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019c8f86-291d-7118-bcf8-c5de17d36c25" target="_blank" class="news-link">AMD-META CHIP SUPPLY DEAL GIVES META OPTION TO TAKE UP TO 10% OF AMD</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">6</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">金十数据</span><span class="rank-num ">20</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://flash.jin10.com/detail/20260224201046805800" target="_blank" class="news-link">AMD(AMD.O)与Meta Platforms(META.O)达成协议后，博通(AVGO.O)股价盘前下跌0.8%。</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">7</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">金十数据</span><span class="rank-num ">24</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://flash.jin10.com/detail/20260224200622010800" target="_blank" class="news-link">AMD(AMD.O)与Meta Platforms(META.O)宣布扩大战略合作，部署6吉瓦的AMD GPU。</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">8</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">金十数据</span><span class="rank-num ">25</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://flash.jin10.com/detail/20260224200535627800" target="_blank" class="news-link">AMD(AMD.O)：与Meta达成的芯片供应协议使Meta可选择认购AMD最多10%的股份。</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">9</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">金十数据</span><span class="rank-num ">26</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://flash.jin10.com/detail/20260224200348729800" target="_blank" class="news-link">AMD(AMD.O)：公司与Meta Platforms(META.O)深化合作，整合GPU、CPU芯片、系统及软件路线图 。</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">10</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">金十数据</span><span class="rank-num ">29</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://flash.jin10.com/detail/20260224200211463800" target="_blank" class="news-link">AMD(AMD.O)：向Meta Platforms(META.O)发行基于业绩的认股权证，可认购最多1.6亿股AMD普通股。</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">微软</div>
+                            <div class="word-count ">2 条</div>
+                        </div>
+                        <div class="word-index">3/8</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">IT之家</span><span class="rank-num ">6</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.ithome.com/0/923/322.htm" target="_blank" class="news-link">统信 Windows 应用兼容引擎 V3.4.3 发布，3ds Max、WPS PDF 适配上线</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">IT之家</span><span class="rank-num ">8</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.ithome.com/0/923/320.htm" target="_blank" class="news-link">荣耀朱臣才：Magicbook Pro 14 将于 MWC 2026 发布，号称“打破 Windows 笔记本续航焦虑”</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">谷歌</div>
+                            <div class="word-count ">1 条</div>
+                        </div>
+                        <div class="word-index">4/8</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">V2EX</span><span class="rank-num top">1</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.v2ex.com/t/1193825" target="_blank" class="news-link">好消息, 新版本 antigaravity 的 gemini-pro 3.1 可用性大幅提高了</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">特斯拉</div>
+                            <div class="word-count ">1 条</div>
+                        </div>
+                        <div class="word-index">5/8</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">华尔街见闻 最新</span><span class="rank-num high">5</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/articles/3766072" target="_blank" class="news-link">马斯克再甩“王炸”：SpaceX真能重塑“太空经济学”？</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">Meta</div>
+                            <div class="word-count warm">6 条</div>
+                        </div>
+                        <div class="word-index">6/8</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">IT之家</span><span class="rank-num top">2</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.ithome.com/0/923/330.htm" target="_blank" class="news-link">VR 游戏《忍者神龟：帝国之城》开启试玩，今年春季登 SteamVR / Meta Quest 售 20 美元</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">华尔街见闻 最新</span><span class="rank-num top">3</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/articles/3766076" target="_blank" class="news-link">AMD拿下Meta长期算力“盟约”：6吉瓦GPU大单+1.6亿股对赌</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">华尔街见闻 快讯</span><span class="rank-num ">6</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/livenews/3058129" target="_blank" class="news-link">META美股盘前走低，现跌0.2%。</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">4</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">MKT新闻</span><span class="rank-num ">12</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019c8f88-804a-7118-bcf8-f08d6806fd79" target="_blank" class="news-link">ADVANCED MICRO DEVICES, META DEEPENING COLLABORATION TO ALIGN GPU, CPU SILICON, SYSTEMS, SOFTWARE ROADMAPS</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">5</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">格隆汇</span><span class="rank-num ">12</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.gelonghui.com/news/5174554" target="_blank" class="news-link">美股盘前要点 | 特朗普10%全球关税生效！AMD与Meta官宣重磅战略合作</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">6</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">金十数据</span><span class="rank-num ">19</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://flash.jin10.com/detail/20260224201131160800" target="_blank" class="news-link">Meta Platforms(META.O)股价转跌，盘前下跌0.6%。</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">日韩</div>
+                            <div class="word-count ">2 条</div>
+                        </div>
+                        <div class="word-index">7/8</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">靠谱新闻</span><span class="rank-num top">2</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.dw.com/zh/担忧-再军事化-中国将20家日本实体列入出口管制名单/a-76103558" target="_blank" class="news-link">担忧“再军事化” 中国将20家日本实体列入出口管制名单</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">今日头条</span><span class="rank-num ">9</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7609316123758067731/" target="_blank" class="news-link">刘和平：该焦虑的不是中国而是日本</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">美国</div>
+                            <div class="word-count warm">5 条</div>
+                        </div>
+                        <div class="word-index">8/8</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">联合早报</span><span class="rank-num top">1</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.zaochenbao.com/news/politics/202602/2465351.html" target="_blank" class="news-link">关税裁决如何严重打击了特朗普第二任期议程</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">联合早报</span><span class="rank-num top">3</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.zaochenbao.com/news/politics/202602/2465349.html" target="_blank" class="news-link">【东谈西论】被裁定违宪，特朗普“关税过山车”再颠荡</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">联合早报</span><span class="rank-num high">5</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.zaochenbao.com/news/politics/202602/2465347.html" target="_blank" class="news-link">特朗普24日国情咨文将强调个人政绩</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">4</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">联合早报</span><span class="rank-num ">6</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.zaochenbao.com/news/politics/202602/2465346.html" target="_blank" class="news-link">特朗普否认军方反对军事打击 称美国可轻易击败伊朗</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">5</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">MKT新闻</span><span class="rank-num ">7</span><span class="time-info">21:06</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019c8f94-4687-7118-bcf9-1b89d8e9b6d8" target="_blank" class="news-link">TRUMP TO CENTER STATE OF THE UNION ON WORKING FAMILIES WITH SWEEPING ECONOMIC CASE</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                <div class="section-divider ai-section">
+                    <div class="ai-section-header">
+                        <div class="ai-section-title">✨ AI 热点分析</div>
+                        <span class="ai-section-badge">AI</span>
+                    </div>
+                    <div class="ai-block">
+                        <div class="ai-block-title">核心热点态势</div>
+                        <div class="ai-block-content">全网霸屏的AI基建竞赛与地缘政治博弈形成双主线。<br><br>【宏观主线】<br>全球算力军备竞赛进入白热化：AMD与Meta达成的6吉瓦GPU部署协议（涉及600亿美元订单+1.6亿股对赌），引发AMD股价单日暴涨15%，标志着AI芯片市场格局出现重大变量。<br><br>【微观领域】<br>1. 地缘政治风险升级：中国对20家日本实体实施出口管制，与特朗普政府宣布10%全球关税形成东西方双重施压<br><br>2. 技术溢出效应显现：蚂蚁「双一亿」AI产品突破、荣耀Magicbook Pro 14挑战Windows续航瓶颈，显示中国科技企业加速应用层创新</div>
+                    </div>
+                    <div class="ai-block">
+                        <div class="ai-block-title">舆论风向争议</div>
+                        <div class="ai-block-content">【情绪光谱】<br>AI领域呈现冰火两重天：财经平台对AMD-Meta交易极度乐观（格隆汇/金十数据多维度报道），而专业社区持续担忧AI失业风险（知乎「不被取代的工作」排名18）。<br><br>【核心矛盾】<br>1. 算力扩张与供应链安全：AMD股价狂欢背后，Arini创始人警告市场过度乐观可能引发软件公司债务危机<br><br>2. 技术民族主义抬头：中国对日出口管制与特朗普关税政策形成镜像博弈，加剧全球产业链割裂</div>
+                    </div>
+                    <div class="ai-block">
+                        <div class="ai-block-title">异动与弱信号</div>
+                        <div class="ai-block-content">【跨平台共振】<br>AMD-Meta交易在财经类平台（华尔街见闻/格隆汇/金十数据）形成信息瀑布，6条相关新闻同时进入各平台前十，但社交平台（微博/抖音）未见讨论，显示专业投资者与大众认知存在断层。<br><br>【轨迹突变】<br>AMD相关新闻在MKT新闻平台呈现爆发式传播，5分钟内从第19名急升至第9名，伴随博通股价下跌0.8%，揭示半导体行业内部替代效应。<br><br>【弱信号捕捉】<br>阿里Coding Plan支持GLM5模型（RSS）未进入热榜，暗示国产大模型在开发者工具层取得突破但市场关注不足</div>
+                    </div>
+                    <div class="ai-block">
+                        <div class="ai-block-title">RSS 深度洞察</div>
+                        <div class="ai-block-content">【认知纠偏】<br>预测市场押注英伟达财报超预期概率达95%，与AMD短期利好形成对冲，揭示市场对AI芯片龙头更持久信心。<br><br>【硬核增量】<br>1. Jim Cramer指出微软需战略刷新，与IT之家报道的统信Windows兼容引擎形成生态替代暗流<br><br>2. Meta-AMD协议包含每吉瓦数百亿美元设备采购成本，远超行业平均水平，暴露AI基建真实烧钱速度</div>
+                    </div>
+                    <div class="ai-block">
+                        <div class="ai-block-title">研判策略建议</div>
+                        <div class="ai-block-content">1. 投资者：警惕AMD短期利好兑现后的供应链瓶颈风险，关注台积电3nm产能分配动态<br><br>2. 品牌方：需重新评估地缘政治敏感技术（如GPU）的备货周期，建立日韩-国产双供应链应急机制<br><br>3. 公众：理性看待AI失业论，重点关注提示词工程、AI伦理审计等新兴职业方向</div>
+                    </div>
+                    <div class="ai-block">
+                        <div class="ai-block-title">独立源点速览</div>
+                        <div class="ai-block-content">[知乎]:<br>AI就业影响持续引发深度讨论，「未来不被AI取代的工作」排名18位稳定，反映技术变革焦虑。该话题停留中游排名未见爆发，但超长讨论周期（累计587回答）形成独特知识图谱<br><br>[Hacker News]:<br>暂无显著异常</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer">
+                <div class="footer-content">
+                    由 <span class="project-name">TrendRadar</span> 生成 ·
+                    <a href="https://github.com/sansan0/TrendRadar" target="_blank" class="footer-link">
+                        GitHub 开源项目
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            async function saveAsImage() {
+                const button = event.target;
+                const originalText = button.textContent;
+
+                try {
+                    button.textContent = '生成中...';
+                    button.disabled = true;
+                    window.scrollTo(0, 0);
+
+                    // 等待页面稳定
+                    await new Promise(resolve => setTimeout(resolve, 200));
+
+                    // 截图前隐藏按钮
+                    const buttons = document.querySelector('.save-buttons');
+                    buttons.style.visibility = 'hidden';
+
+                    // 再次等待确保按钮完全隐藏
+                    await new Promise(resolve => setTimeout(resolve, 100));
+
+                    const container = document.querySelector('.container');
+
+                    const canvas = await html2canvas(container, {
+                        backgroundColor: '#ffffff',
+                        scale: 1.5,
+                        useCORS: true,
+                        allowTaint: false,
+                        imageTimeout: 10000,
+                        removeContainer: false,
+                        foreignObjectRendering: false,
+                        logging: false,
+                        width: container.offsetWidth,
+                        height: container.offsetHeight,
+                        x: 0,
+                        y: 0,
+                        scrollX: 0,
+                        scrollY: 0,
+                        windowWidth: window.innerWidth,
+                        windowHeight: window.innerHeight
+                    });
+
+                    buttons.style.visibility = 'visible';
+
+                    const link = document.createElement('a');
+                    const now = new Date();
+                    const filename = `TrendRadar_热点新闻分析_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}.png`;
+
+                    link.download = filename;
+                    link.href = canvas.toDataURL('image/png', 1.0);
+
+                    // 触发下载
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                    button.textContent = '保存成功!';
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.disabled = false;
+                    }, 2000);
+
+                } catch (error) {
+                    const buttons = document.querySelector('.save-buttons');
+                    buttons.style.visibility = 'visible';
+                    button.textContent = '保存失败';
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.disabled = false;
+                    }, 2000);
+                }
+            }
+
+            async function saveAsMultipleImages() {
+                const button = event.target;
+                const originalText = button.textContent;
+                const container = document.querySelector('.container');
+                const scale = 1.5;
+                const maxHeight = 5000 / scale;
+
+                try {
+                    button.textContent = '分析中...';
+                    button.disabled = true;
+
+                    // 获取所有可能的分割元素
+                    const newsItems = Array.from(container.querySelectorAll('.news-item'));
+                    const wordGroups = Array.from(container.querySelectorAll('.word-group'));
+                    const newSection = container.querySelector('.new-section');
+                    const errorSection = container.querySelector('.error-section');
+                    const header = container.querySelector('.header');
+                    const footer = container.querySelector('.footer');
+
+                    // 计算元素位置和高度
+                    const containerRect = container.getBoundingClientRect();
+                    const elements = [];
+
+                    // 添加header作为必须包含的元素
+                    elements.push({
+                        type: 'header',
+                        element: header,
+                        top: 0,
+                        bottom: header.offsetHeight,
+                        height: header.offsetHeight
+                    });
+
+                    // 添加错误信息（如果存在）
+                    if (errorSection) {
+                        const rect = errorSection.getBoundingClientRect();
+                        elements.push({
+                            type: 'error',
+                            element: errorSection,
+                            top: rect.top - containerRect.top,
+                            bottom: rect.bottom - containerRect.top,
+                            height: rect.height
+                        });
+                    }
+
+                    // 按word-group分组处理news-item
+                    wordGroups.forEach(group => {
+                        const groupRect = group.getBoundingClientRect();
+                        const groupNewsItems = group.querySelectorAll('.news-item');
+
+                        // 添加word-group的header部分
+                        const wordHeader = group.querySelector('.word-header');
+                        if (wordHeader) {
+                            const headerRect = wordHeader.getBoundingClientRect();
+                            elements.push({
+                                type: 'word-header',
+                                element: wordHeader,
+                                parent: group,
+                                top: groupRect.top - containerRect.top,
+                                bottom: headerRect.bottom - containerRect.top,
+                                height: headerRect.height
+                            });
+                        }
+
+                        // 添加每个news-item
+                        groupNewsItems.forEach(item => {
+                            const rect = item.getBoundingClientRect();
+                            elements.push({
+                                type: 'news-item',
+                                element: item,
+                                parent: group,
+                                top: rect.top - containerRect.top,
+                                bottom: rect.bottom - containerRect.top,
+                                height: rect.height
+                            });
+                        });
+                    });
+
+                    // 添加新增新闻部分
+                    if (newSection) {
+                        const rect = newSection.getBoundingClientRect();
+                        elements.push({
+                            type: 'new-section',
+                            element: newSection,
+                            top: rect.top - containerRect.top,
+                            bottom: rect.bottom - containerRect.top,
+                            height: rect.height
+                        });
+                    }
+
+                    // 添加footer
+                    const footerRect = footer.getBoundingClientRect();
+                    elements.push({
+                        type: 'footer',
+                        element: footer,
+                        top: footerRect.top - containerRect.top,
+                        bottom: footerRect.bottom - containerRect.top,
+                        height: footer.offsetHeight
+                    });
+
+                    // 计算分割点
+                    const segments = [];
+                    let currentSegment = { start: 0, end: 0, height: 0, includeHeader: true };
+                    let headerHeight = header.offsetHeight;
+                    currentSegment.height = headerHeight;
+
+                    for (let i = 1; i < elements.length; i++) {
+                        const element = elements[i];
+                        const potentialHeight = element.bottom - currentSegment.start;
+
+                        // 检查是否需要创建新分段
+                        if (potentialHeight > maxHeight && currentSegment.height > headerHeight) {
+                            // 在前一个元素结束处分割
+                            currentSegment.end = elements[i - 1].bottom;
+                            segments.push(currentSegment);
+
+                            // 开始新分段
+                            currentSegment = {
+                                start: currentSegment.end,
+                                end: 0,
+                                height: element.bottom - currentSegment.end,
+                                includeHeader: false
+                            };
+                        } else {
+                            currentSegment.height = potentialHeight;
+                            currentSegment.end = element.bottom;
+                        }
+                    }
+
+                    // 添加最后一个分段
+                    if (currentSegment.height > 0) {
+                        currentSegment.end = container.offsetHeight;
+                        segments.push(currentSegment);
+                    }
+
+                    button.textContent = `生成中 (0/${segments.length})...`;
+
+                    // 隐藏保存按钮
+                    const buttons = document.querySelector('.save-buttons');
+                    buttons.style.visibility = 'hidden';
+
+                    // 为每个分段生成图片
+                    const images = [];
+                    for (let i = 0; i < segments.length; i++) {
+                        const segment = segments[i];
+                        button.textContent = `生成中 (${i + 1}/${segments.length})...`;
+
+                        // 创建临时容器用于截图
+                        const tempContainer = document.createElement('div');
+                        tempContainer.style.cssText = `
+                            position: absolute;
+                            left: -9999px;
+                            top: 0;
+                            width: ${container.offsetWidth}px;
+                            background: white;
+                        `;
+                        tempContainer.className = 'container';
+
+                        // 克隆容器内容
+                        const clonedContainer = container.cloneNode(true);
+
+                        // 移除克隆内容中的保存按钮
+                        const clonedButtons = clonedContainer.querySelector('.save-buttons');
+                        if (clonedButtons) {
+                            clonedButtons.style.display = 'none';
+                        }
+
+                        tempContainer.appendChild(clonedContainer);
+                        document.body.appendChild(tempContainer);
+
+                        // 等待DOM更新
+                        await new Promise(resolve => setTimeout(resolve, 100));
+
+                        // 使用html2canvas截取特定区域
+                        const canvas = await html2canvas(clonedContainer, {
+                            backgroundColor: '#ffffff',
+                            scale: scale,
+                            useCORS: true,
+                            allowTaint: false,
+                            imageTimeout: 10000,
+                            logging: false,
+                            width: container.offsetWidth,
+                            height: segment.end - segment.start,
+                            x: 0,
+                            y: segment.start,
+                            windowWidth: window.innerWidth,
+                            windowHeight: window.innerHeight
+                        });
+
+                        images.push(canvas.toDataURL('image/png', 1.0));
+
+                        // 清理临时容器
+                        document.body.removeChild(tempContainer);
+                    }
+
+                    // 恢复按钮显示
+                    buttons.style.visibility = 'visible';
+
+                    // 下载所有图片
+                    const now = new Date();
+                    const baseFilename = `TrendRadar_热点新闻分析_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+
+                    for (let i = 0; i < images.length; i++) {
+                        const link = document.createElement('a');
+                        link.download = `${baseFilename}_part${i + 1}.png`;
+                        link.href = images[i];
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+
+                        // 延迟一下避免浏览器阻止多个下载
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+
+                    button.textContent = `已保存 ${segments.length} 张图片!`;
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.disabled = false;
+                    }, 2000);
+
+                } catch (error) {
+                    console.error('分段保存失败:', error);
+                    const buttons = document.querySelector('.save-buttons');
+                    buttons.style.visibility = 'visible';
+                    button.textContent = '保存失败';
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.disabled = false;
+                    }, 2000);
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                window.scrollTo(0, 0);
+            });
+        </script>
+    </body>
+    </html>
+    
