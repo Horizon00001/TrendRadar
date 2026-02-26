@@ -659,7 +659,7 @@ class AnalyticsTools:
         topic: Optional[str] = None,
         platforms: Optional[List[str]] = None,
         date_range: Optional[Union[Dict[str, str], str]] = None,
-        limit: int = 50,
+        limit: int = 1000,
         sort_by_weight: bool = True,
         include_url: bool = False
     ) -> Dict:
@@ -707,7 +707,7 @@ class AnalyticsTools:
             if topic:
                 topic = validate_keyword(topic)
             platforms = validate_platforms(platforms)
-            limit = validate_limit(limit, default=50)
+            limit = validate_limit(limit, default=1000)
 
             # 处理日期范围
             if date_range:
@@ -938,7 +938,7 @@ class AnalyticsTools:
         self,
         reference_title: str,
         threshold: float = 0.6,
-        limit: int = 50,
+        limit: int = 1000,
         include_url: bool = False
     ) -> Dict:
         """
@@ -972,7 +972,7 @@ class AnalyticsTools:
             # 参数验证
             reference_title = validate_keyword(reference_title)
             threshold = validate_threshold(threshold, default=0.6, min_value=0.0, max_value=1.0)
-            limit = validate_limit(limit, default=50)
+            limit = validate_limit(limit, default=1000)
 
             # 读取数据
             all_titles, id_to_name, _ = self.data_service.parser.read_all_titles_for_date()
@@ -1053,7 +1053,7 @@ class AnalyticsTools:
         self,
         entity: str,
         entity_type: Optional[str] = None,
-        limit: int = 50,
+        limit: int = 1000,
         sort_by_weight: bool = True
     ) -> Dict:
         """
@@ -1086,7 +1086,7 @@ class AnalyticsTools:
         try:
             # 参数验证
             entity = validate_keyword(entity)
-            limit = validate_limit(limit, default=50)
+            limit = validate_limit(limit, default=1000)
 
             if entity_type and entity_type not in ["person", "location", "organization"]:
                 raise InvalidParameterError(
@@ -2035,7 +2035,7 @@ class AnalyticsTools:
         date_range: Optional[Union[Dict[str, str], str]] = None,
         platforms: Optional[List[str]] = None,
         similarity_threshold: float = 0.7,
-        limit: int = 50,
+        limit: int = 1000,
         include_url: bool = False
     ) -> Dict:
         """
@@ -2064,7 +2064,7 @@ class AnalyticsTools:
             similarity_threshold = validate_threshold(
                 similarity_threshold, default=0.7, min_value=0.3, max_value=1.0
             )
-            limit = validate_limit(limit, default=50)
+            limit = validate_limit(limit, default=1000)
 
             # 处理日期范围
             if date_range:

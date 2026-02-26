@@ -189,7 +189,7 @@ async def resolve_date_range(
 @mcp.tool
 async def get_latest_news(
     platforms: Optional[List[str]] = None,
-    limit: int = 50,
+    limit: int = 1000,
     include_url: bool = False
 ) -> str:
     """
@@ -255,7 +255,7 @@ async def get_trending_topics(
 async def get_latest_rss(
     feeds: Optional[List[str]] = None,
     days: int = 1,
-    limit: int = 50,
+    limit: int = 1000,
     include_summary: bool = False
 ) -> str:
     """
@@ -289,7 +289,7 @@ async def search_rss(
     keyword: str,
     feeds: Optional[List[str]] = None,
     days: int = 7,
-    limit: int = 50,
+    limit: int = 1000,
     include_summary: bool = False
 ) -> str:
     """
@@ -351,7 +351,7 @@ async def get_rss_feeds_status() -> str:
 async def get_news_by_date(
     date_range: Optional[Union[Dict[str, str], str]] = None,
     platforms: Optional[List[str]] = None,
-    limit: int = 50,
+    limit: int = 1000,
     include_url: bool = False
 ) -> str:
     """
@@ -485,7 +485,7 @@ async def analyze_sentiment(
     topic: Optional[str] = None,
     platforms: Optional[List[str]] = None,
     date_range: Optional[Union[Dict[str, str], str]] = None,
-    limit: int = 50,
+    limit: int = 1000,
     sort_by_weight: bool = True,
     include_url: bool = False
 ) -> str:
@@ -526,7 +526,7 @@ async def find_related_news(
     reference_title: str,
     date_range: Optional[Union[Dict[str, str], str]] = None,
     threshold: float = 0.5,
-    limit: int = 50,
+    limit: int = 1000,
     include_url: bool = False
 ) -> str:
     """
@@ -593,7 +593,7 @@ async def aggregate_news(
     date_range: Optional[Union[Dict[str, str], str]] = None,
     platforms: Optional[List[str]] = None,
     similarity_threshold: float = 0.7,
-    limit: int = 50,
+    limit: int = 1000,
     include_url: bool = False
 ) -> str:
     """
@@ -695,7 +695,7 @@ async def search_news(
     search_mode: str = "keyword",
     date_range: Optional[Union[Dict[str, str], str]] = None,
     platforms: Optional[List[str]] = None,
-    limit: int = 50,
+    limit: int = 1000,
     sort_by: str = "relevance",
     threshold: float = 0.6,
     include_url: bool = False,

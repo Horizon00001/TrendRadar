@@ -46,7 +46,7 @@ class DataService:
     def get_latest_news(
         self,
         platforms: Optional[List[str]] = None,
-        limit: int = 50,
+        limit: int = 1000,
         include_url: bool = False
     ) -> List[Dict]:
         """
@@ -121,7 +121,7 @@ class DataService:
         self,
         target_date: datetime,
         platforms: Optional[List[str]] = None,
-        limit: int = 50,
+        limit: int = 1000,
         include_url: bool = False
     ) -> List[Dict]:
         """
@@ -690,7 +690,7 @@ class DataService:
         self,
         feeds: Optional[List[str]] = None,
         days: int = 1,
-        limit: int = 50,
+        limit: int = 1000,
         include_summary: bool = False
     ) -> List[Dict]:
         """
@@ -782,7 +782,7 @@ class DataService:
         keyword: str,
         feeds: Optional[List[str]] = None,
         days: int = 7,
-        limit: int = 50,
+        limit: int = 1000,
         include_summary: bool = False
     ) -> List[Dict]:
         """

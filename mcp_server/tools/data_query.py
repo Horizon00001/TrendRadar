@@ -58,7 +58,7 @@ class DataQueryTools:
         try:
             # 参数验证
             platforms = validate_platforms(platforms)
-            limit = validate_limit(limit, default=50)
+            limit = validate_limit(limit, default=1000)
 
             # 获取数据
             news_list = self.data_service.get_latest_news(
@@ -127,7 +127,7 @@ class DataQueryTools:
             platforms = validate_platforms(platforms)
 
             if limit is not None:
-                limit = validate_limit(limit, default=100)
+                limit = validate_limit(limit, default=1000)
 
             # 搜索数据
             search_result = self.data_service.search_news_by_keyword(
@@ -280,7 +280,7 @@ class DataQueryTools:
                 date_str = date_range
             target_date = validate_date_query(date_str)
             platforms = validate_platforms(platforms)
-            limit = validate_limit(limit, default=50)
+            limit = validate_limit(limit, default=1000)
 
             # 获取数据
             news_list = self.data_service.get_news_by_date(
@@ -341,7 +341,7 @@ class DataQueryTools:
             RSS 条目列表字典
         """
         try:
-            limit = validate_limit(limit, default=50)
+            limit = validate_limit(limit, default=1000)
 
             rss_list = self.data_service.get_latest_rss(
                 feeds=feeds,
@@ -399,7 +399,7 @@ class DataQueryTools:
         """
         try:
             keyword = validate_keyword(keyword)
-            limit = validate_limit(limit, default=50)
+            limit = validate_limit(limit, default=1000)
 
             if days < 1 or days > 30:
                 days = 7

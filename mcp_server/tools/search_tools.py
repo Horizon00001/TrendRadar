@@ -33,7 +33,7 @@ class SearchTools:
         search_mode: str = "keyword",
         date_range: Optional[Union[Dict[str, str], str]] = None,
         platforms: Optional[List[str]] = None,
-        limit: int = 50,
+        limit: int = 1000,
         sort_by: str = "relevance",
         threshold: float = 0.6,
         include_url: bool = False,
@@ -91,7 +91,7 @@ class SearchTools:
                     suggestion="支持的排序: relevance, weight, date"
                 )
 
-            limit = validate_limit(limit, default=50)
+            limit = validate_limit(limit, default=1000)
             threshold = validate_threshold(threshold, default=0.6, min_value=0.0, max_value=1.0)
 
             # 处理日期范围
@@ -533,7 +533,7 @@ class SearchTools:
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
         threshold: float = 0.4,
-        limit: int = 50,
+        limit: int = 1000,
         include_url: bool = False
     ) -> Dict:
         """
@@ -570,7 +570,7 @@ class SearchTools:
             # 参数验证
             reference_title = validate_keyword(reference_title)
             threshold = validate_threshold(threshold, default=0.4, min_value=0.0, max_value=1.0)
-            limit = validate_limit(limit, default=50)
+            limit = validate_limit(limit, default=1000)
 
             # 确定查询日期范围
             today = datetime.now()
@@ -741,7 +741,7 @@ class SearchTools:
         reference_title: str,
         date_range: Optional[Union[Dict[str, str], str]] = None,
         threshold: float = 0.5,
-        limit: int = 50,
+        limit: int = 1000,
         include_url: bool = False
     ) -> Dict:
         """
@@ -767,7 +767,7 @@ class SearchTools:
             # 参数验证
             reference_title = validate_keyword(reference_title)
             threshold = validate_threshold(threshold, default=0.5, min_value=0.0, max_value=1.0)
-            limit = validate_limit(limit, default=50)
+            limit = validate_limit(limit, default=1000)
 
             # 确定日期范围
             today = datetime.now()
