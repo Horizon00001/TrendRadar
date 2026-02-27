@@ -38,7 +38,7 @@ class SearchTools:
         threshold: float = 0.6,
         include_url: bool = False,
         include_rss: bool = False,
-        rss_limit: int = 20
+        rss_limit: int = 1000
     ) -> Dict:
         """
         统一新闻搜索工具 - 整合多种搜索模式，支持同时搜索热榜和RSS
@@ -899,7 +899,7 @@ class SearchTools:
         query: str,
         start_date: datetime,
         end_date: datetime,
-        limit: int = 20,
+        limit: int = 1000,
         include_url: bool = False
     ) -> Dict:
         """
