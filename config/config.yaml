@@ -462,7 +462,7 @@ ai:
 
   model: "deepseek-r1"
 
-  api_key: "sk-2fbe9a6019b3a6240927f2df0a45b3cf"                       # API Key（建议使用环境变量 AI_API_KEY）
+  api_key: "sk-10430753799a157386334455326c7f06"                       # API Key（建议使用环境变量 AI_API_KEY）
 
   api_base: "https://apis.iflow.cn/v1"                      # 自定义 API 端点（可选，大多数情况留空）
                                     # 示例: https://api.openai.com/v1（自建代理或兼容接口）
