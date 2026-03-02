@@ -158,6 +158,9 @@
 
 创业
 
+[Startup]
+/Startup|startup|初创|融资|VC|天使轮|A轮|B轮|创业公司|风险投资|孵化器|Y Combinator/ => 创业
+
 [AI]
 /(?<![a-z])ai(?![a-z])/
 人工智能
