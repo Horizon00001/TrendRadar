@@ -1,0 +1,2023 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>热点新闻分析</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <style>
+            * { box-sizing: border-box; }
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+                margin: 0;
+                padding: 16px;
+                background: #fafafa;
+                color: #333;
+                line-height: 1.5;
+            }
+
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+                background: white;
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+            }
+
+            .header {
+                background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+                color: white;
+                padding: 32px 24px;
+                text-align: center;
+                position: relative;
+            }
+
+            .save-buttons {
+                position: absolute;
+                top: 16px;
+                right: 16px;
+                display: flex;
+                gap: 8px;
+            }
+
+            .save-btn {
+                background: rgba(255, 255, 255, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                color: white;
+                padding: 8px 16px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 13px;
+                font-weight: 500;
+                transition: all 0.2s ease;
+                backdrop-filter: blur(10px);
+                white-space: nowrap;
+            }
+
+            .save-btn:hover {
+                background: rgba(255, 255, 255, 0.3);
+                border-color: rgba(255, 255, 255, 0.5);
+                transform: translateY(-1px);
+            }
+
+            .save-btn:active {
+                transform: translateY(0);
+            }
+
+            .save-btn:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+
+            .header-title {
+                font-size: 22px;
+                font-weight: 700;
+                margin: 0 0 20px 0;
+            }
+
+            .header-info {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+                font-size: 14px;
+                opacity: 0.95;
+            }
+
+            .info-item {
+                text-align: center;
+            }
+
+            .info-label {
+                display: block;
+                font-size: 12px;
+                opacity: 0.8;
+                margin-bottom: 4px;
+            }
+
+            .info-value {
+                font-weight: 600;
+                font-size: 16px;
+            }
+
+            .content {
+                padding: 24px;
+            }
+
+            .word-group {
+                margin-bottom: 40px;
+            }
+
+            .word-group:first-child {
+                margin-top: 0;
+            }
+
+            .word-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 20px;
+                padding-bottom: 8px;
+                border-bottom: 1px solid #f0f0f0;
+            }
+
+            .word-info {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .word-name {
+                font-size: 17px;
+                font-weight: 600;
+                color: #1a1a1a;
+            }
+
+            .word-count {
+                color: #666;
+                font-size: 13px;
+                font-weight: 500;
+            }
+
+            .word-count.hot { color: #dc2626; font-weight: 600; }
+            .word-count.warm { color: #ea580c; font-weight: 600; }
+
+            .word-index {
+                color: #999;
+                font-size: 12px;
+            }
+
+            .news-item {
+                margin-bottom: 20px;
+                padding: 16px 0;
+                border-bottom: 1px solid #f5f5f5;
+                position: relative;
+                display: flex;
+                gap: 12px;
+                align-items: center;
+            }
+
+            .news-item:last-child {
+                border-bottom: none;
+            }
+
+            .news-item.new::after {
+                content: "NEW";
+                position: absolute;
+                top: 12px;
+                right: 0;
+                background: #fbbf24;
+                color: #92400e;
+                font-size: 9px;
+                font-weight: 700;
+                padding: 3px 6px;
+                border-radius: 4px;
+                letter-spacing: 0.5px;
+            }
+
+            .news-number {
+                color: #999;
+                font-size: 13px;
+                font-weight: 600;
+                min-width: 20px;
+                text-align: center;
+                flex-shrink: 0;
+                background: #f8f9fa;
+                border-radius: 50%;
+                width: 24px;
+                height: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                align-self: flex-start;
+                margin-top: 8px;
+            }
+
+            .news-content {
+                flex: 1;
+                min-width: 0;
+                padding-right: 40px;
+            }
+
+            .news-item.new .news-content {
+                padding-right: 50px;
+            }
+
+            .news-header {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 8px;
+                flex-wrap: wrap;
+            }
+
+            .source-name {
+                color: #666;
+                font-size: 12px;
+                font-weight: 500;
+            }
+
+            .keyword-tag {
+                color: #2563eb;
+                font-size: 12px;
+                font-weight: 500;
+                background: #eff6ff;
+                padding: 2px 6px;
+                border-radius: 4px;
+            }
+
+            .rank-num {
+                color: #fff;
+                background: #6b7280;
+                font-size: 10px;
+                font-weight: 700;
+                padding: 2px 6px;
+                border-radius: 10px;
+                min-width: 18px;
+                text-align: center;
+            }
+
+            .rank-num.top { background: #dc2626; }
+            .rank-num.high { background: #ea580c; }
+
+            .time-info {
+                color: #999;
+                font-size: 11px;
+            }
+
+            .count-info {
+                color: #059669;
+                font-size: 11px;
+                font-weight: 500;
+            }
+
+            .news-title {
+                font-size: 15px;
+                line-height: 1.4;
+                color: #1a1a1a;
+                margin: 0;
+            }
+
+            .news-link {
+                color: #2563eb;
+                text-decoration: none;
+            }
+
+            .news-link:hover {
+                text-decoration: underline;
+            }
+
+            .news-link:visited {
+                color: #7c3aed;
+            }
+
+            /* 通用区域分割线样式 */
+            .section-divider {
+                margin-top: 32px;
+                padding-top: 24px;
+                border-top: 2px solid #e5e7eb;
+            }
+
+            /* 热榜统计区样式 */
+            .hotlist-section {
+                /* 默认无边框，由 section-divider 动态添加 */
+            }
+
+            .new-section {
+                margin-top: 40px;
+                padding-top: 24px;
+            }
+
+            .new-section-title {
+                color: #1a1a1a;
+                font-size: 16px;
+                font-weight: 600;
+                margin: 0 0 20px 0;
+            }
+
+            .new-source-group {
+                margin-bottom: 24px;
+            }
+
+            .new-source-title {
+                color: #666;
+                font-size: 13px;
+                font-weight: 500;
+                margin: 0 0 12px 0;
+                padding-bottom: 6px;
+                border-bottom: 1px solid #f5f5f5;
+            }
+
+            .new-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 8px 0;
+                border-bottom: 1px solid #f9f9f9;
+            }
+
+            .new-item:last-child {
+                border-bottom: none;
+            }
+
+            .new-item-number {
+                color: #999;
+                font-size: 12px;
+                font-weight: 600;
+                min-width: 18px;
+                text-align: center;
+                flex-shrink: 0;
+                background: #f8f9fa;
+                border-radius: 50%;
+                width: 20px;
+                height: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .new-item-rank {
+                color: #fff;
+                background: #6b7280;
+                font-size: 10px;
+                font-weight: 700;
+                padding: 3px 6px;
+                border-radius: 8px;
+                min-width: 20px;
+                text-align: center;
+                flex-shrink: 0;
+            }
+
+            .new-item-rank.top { background: #dc2626; }
+            .new-item-rank.high { background: #ea580c; }
+
+            .new-item-content {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .new-item-title {
+                font-size: 14px;
+                line-height: 1.4;
+                color: #1a1a1a;
+                margin: 0;
+            }
+
+            .error-section {
+                background: #fef2f2;
+                border: 1px solid #fecaca;
+                border-radius: 8px;
+                padding: 16px;
+                margin-bottom: 24px;
+            }
+
+            .error-title {
+                color: #dc2626;
+                font-size: 14px;
+                font-weight: 600;
+                margin: 0 0 8px 0;
+            }
+
+            .error-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .error-item {
+                color: #991b1b;
+                font-size: 13px;
+                padding: 2px 0;
+                font-family: 'SF Mono', Consolas, monospace;
+            }
+
+            .footer {
+                margin-top: 32px;
+                padding: 20px 24px;
+                background: #f8f9fa;
+                border-top: 1px solid #e5e7eb;
+                text-align: center;
+            }
+
+            .footer-content {
+                font-size: 13px;
+                color: #6b7280;
+                line-height: 1.6;
+            }
+
+            .footer-link {
+                color: #4f46e5;
+                text-decoration: none;
+                font-weight: 500;
+                transition: color 0.2s ease;
+            }
+
+            .footer-link:hover {
+                color: #7c3aed;
+                text-decoration: underline;
+            }
+
+            .project-name {
+                font-weight: 600;
+                color: #374151;
+            }
+
+            @media (max-width: 480px) {
+                body { padding: 12px; }
+                .header { padding: 24px 20px; }
+                .content { padding: 20px; }
+                .footer { padding: 16px 20px; }
+                .header-info { grid-template-columns: 1fr; gap: 12px; }
+                .news-header { gap: 6px; }
+                .news-content { padding-right: 45px; }
+                .news-item { gap: 8px; }
+                .new-item { gap: 8px; }
+                .news-number { width: 20px; height: 20px; font-size: 12px; }
+                .save-buttons {
+                    position: static;
+                    margin-bottom: 16px;
+                    display: flex;
+                    gap: 8px;
+                    justify-content: center;
+                    flex-direction: column;
+                    width: 100%;
+                }
+                .save-btn {
+                    width: 100%;
+                }
+            }
+
+            /* RSS 订阅内容样式 */
+            .rss-section {
+                margin-top: 32px;
+                padding-top: 24px;
+            }
+
+            .rss-section-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 20px;
+            }
+
+            .rss-section-title {
+                font-size: 18px;
+                font-weight: 600;
+                color: #059669;
+            }
+
+            .rss-section-count {
+                color: #6b7280;
+                font-size: 14px;
+            }
+
+            .feed-group {
+                margin-bottom: 24px;
+            }
+
+            .feed-group:last-child {
+                margin-bottom: 0;
+            }
+
+            .feed-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 12px;
+                padding-bottom: 8px;
+                border-bottom: 2px solid #10b981;
+            }
+
+            .feed-name {
+                font-size: 15px;
+                font-weight: 600;
+                color: #059669;
+            }
+
+            .feed-count {
+                color: #666;
+                font-size: 13px;
+                font-weight: 500;
+            }
+
+            .rss-item {
+                margin-bottom: 12px;
+                padding: 14px;
+                background: #f0fdf4;
+                border-radius: 8px;
+                border-left: 3px solid #10b981;
+            }
+
+            .rss-item:last-child {
+                margin-bottom: 0;
+            }
+
+            .rss-meta {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 6px;
+                flex-wrap: wrap;
+            }
+
+            .rss-time {
+                color: #6b7280;
+                font-size: 12px;
+            }
+
+            .rss-author {
+                color: #059669;
+                font-size: 12px;
+                font-weight: 500;
+            }
+
+            .rss-title {
+                font-size: 14px;
+                line-height: 1.5;
+                margin-bottom: 6px;
+            }
+
+            .rss-link {
+                color: #1f2937;
+                text-decoration: none;
+                font-weight: 500;
+            }
+
+            .rss-link:hover {
+                color: #059669;
+                text-decoration: underline;
+            }
+
+            .rss-summary {
+                font-size: 13px;
+                color: #6b7280;
+                line-height: 1.5;
+                margin: 0;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+
+            /* 独立展示区样式 - 复用热点词汇统计区样式 */
+            .standalone-section {
+                margin-top: 32px;
+                padding-top: 24px;
+            }
+
+            .standalone-section-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 20px;
+            }
+
+            .standalone-section-title {
+                font-size: 18px;
+                font-weight: 600;
+                color: #059669;
+            }
+
+            .standalone-section-count {
+                color: #6b7280;
+                font-size: 14px;
+            }
+
+            .standalone-group {
+                margin-bottom: 40px;
+            }
+
+            .standalone-group:last-child {
+                margin-bottom: 0;
+            }
+
+            .standalone-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 20px;
+                padding-bottom: 8px;
+                border-bottom: 1px solid #f0f0f0;
+            }
+
+            .standalone-name {
+                font-size: 17px;
+                font-weight: 600;
+                color: #1a1a1a;
+            }
+
+            .standalone-count {
+                color: #666;
+                font-size: 13px;
+                font-weight: 500;
+            }
+
+            /* AI 分析区块样式 */
+            .ai-section {
+                margin-top: 32px;
+                padding: 24px;
+                background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+                border-radius: 12px;
+                border: 1px solid #bae6fd;
+            }
+
+            .ai-section-header {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+
+            .ai-section-title {
+                font-size: 18px;
+                font-weight: 600;
+                color: #0369a1;
+            }
+
+            .ai-section-badge {
+                background: #0ea5e9;
+                color: white;
+                font-size: 11px;
+                font-weight: 600;
+                padding: 3px 8px;
+                border-radius: 4px;
+            }
+
+            .ai-block {
+                margin-bottom: 16px;
+                padding: 16px;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            }
+
+            .ai-block:last-child {
+                margin-bottom: 0;
+            }
+
+            .ai-block-title {
+                font-size: 14px;
+                font-weight: 600;
+                color: #0369a1;
+                margin-bottom: 8px;
+            }
+
+            .ai-block-content {
+                font-size: 14px;
+                line-height: 1.6;
+                color: #334155;
+                white-space: pre-wrap;
+            }
+
+            .ai-error {
+                padding: 16px;
+                background: #fef2f2;
+                border: 1px solid #fecaca;
+                border-radius: 8px;
+                color: #991b1b;
+                font-size: 14px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <div class="save-buttons">
+                    <button class="save-btn" onclick="saveAsImage()">保存为图片</button>
+                    <button class="save-btn" onclick="saveAsMultipleImages()">分段保存</button>
+                </div>
+                <div class="header-title">热点新闻分析</div>
+                <div class="header-info">
+                    <div class="info-item">
+                        <span class="info-label">报告类型</span>
+                        <span class="info-value">增量分析</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">新闻总数</span>
+                        <span class="info-value">790 条</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">热点新闻</span>
+                        <span class="info-value">94 条</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">生成时间</span>
+                        <span class="info-value">03-07 00:07</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="hotlist-section">
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">创业</div>
+                            <div class="word-count ">3 条</div>
+                        </div>
+                        <div class="word-index">1/12</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">Solidot</span><span class="rank-num top">1</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.solidot.org/story?sid=83412" target="_blank" class="news-link">【重磅推荐】2026 年度 NVIDIA 创业企业展示现已启动招募！</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">Solidot</span><span class="rank-num high">4</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.solidot.org/story?sid=83700" target="_blank" class="news-link">关注面向创业公司和投资机构的 GTC 2026</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">V2EX</span><span class="rank-num ">10</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.v2ex.com/t/1196410" target="_blank" class="news-link">从“线下帮装 OpenClaw”到“配对码式 Agent”：一个面向大众的下一代 Agent 创业企划</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">Startup</div>
+                            <div class="word-count ">1 条</div>
+                        </div>
+                        <div class="word-index">2/12</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">华尔街见闻 快讯</span><span class="rank-num ">21</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/livenews/3065341" target="_blank" class="news-link">据美国纽约联储数据，上个交易日（3月5日，非农数据出炉之前一天）担保隔夜融资利率（SOFR）报3.66%，之前一天报3.67%。
+
+上个交易日有效的联邦基金利率报3.64%，之前一天报3.64%。</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">AI</div>
+                            <div class="word-count hot">38 条</div>
+                        </div>
+                        <div class="word-index">3/12</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">牛客网</span><span class="rank-num top">1</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.nowcoder.com/feed/main/detail/4bc3eab67c734c759e9753ef906c1017" target="_blank" class="news-link">简历上的AI项目，面试官到底想看什么？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">虫部落</span><span class="rank-num top">1</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24080-1-1.html" target="_blank" class="news-link">关于 “如何获得 5 升牛奶” 的最新 AI 测试</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">掘金</span><span class="rank-num top">3</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7613318336118882323" target="_blank" class="news-link">Flutter 发布官方 Skills ，Flutter 在 AI 领域再添一助力</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">4</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">牛客网</span><span class="rank-num top">3</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.nowcoder.com/discuss/858729641748463616" target="_blank" class="news-link">我做过的，被面试官夸爆的那些Ai项目(二)</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">5</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">财联社热门</span><span class="rank-num high">4</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.cls.cn/detail/2305626" target="_blank" class="news-link">“龙虾” 炸翻AI圈！雷军下场 鹅厂排长队</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">6</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">掘金</span><span class="rank-num high">4</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7613230154210852910" target="_blank" class="news-link">2026 Flutter VS React Native ，同时在 AI 时代 VS Native 开发，你没见过的版本</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">7</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">牛客网</span><span class="rank-num high">4</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.nowcoder.com/discuss/858800223605231616" target="_blank" class="news-link">AI面试相关之RAG与Doris（JAVA）</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">8</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">掘金</span><span class="rank-num high">5</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7613015638243590186" target="_blank" class="news-link">2026最新OpenClaw(龙虾ai)安装配置API思路与推荐方案</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">9</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">少数派</span><span class="rank-num high">5</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://sspai.com/post/106285" target="_blank" class="news-link">年度征文｜AI 十字路口：当机器学会「思考」，我们应该知道什么？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">10</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">ProductHunt</span><span class="rank-num high">5</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/lovon/launches/lovon-ai-therapy?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">Lovon AI Therapy</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">11</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">华尔街见闻 最热</span><span class="rank-num ">6</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/articles/3766836" target="_blank" class="news-link">OpenAI发布最强专业模型GPT-5.4，自动操作电脑，插件支持AI玩转Excel和金融分析</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">12</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">百度热搜</span><span class="rank-num ">7</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.baidu.com/s?wd=%E7%A0%B45%E4%BA%BF%E6%92%AD%E6%94%BEAI%E7%9F%AD%E5%89%A7%E6%88%90%E6%9C%AC%E4%BB%853000" target="_blank" class="news-link">破5亿播放AI短剧成本仅3000</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">13</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">牛客网</span><span class="rank-num ">7</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.nowcoder.com/discuss/859040544318554112" target="_blank" class="news-link">AI产品实习生面试要达到什么水平？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">14</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">少数派</span><span class="rank-num ">8</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://sspai.com/post/106232" target="_blank" class="news-link">OpenClaw：高强度使用两周，这个 AI 工具颠覆了我的工作流</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">15</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">凤凰网</span><span class="rank-num ">11</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://news.ifeng.com/c/8rHKBpbeROT" target="_blank" class="news-link">他把AI模型卖给美军，如今却害怕成为“末日博士”</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">16</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">远景论坛</span><span class="rank-num ">13</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.pcbeta.com/viewthread-2066036-1-1.html" target="_blank" class="news-link">仅存活约 2 个月，微软 Copilot AI 下线实验“真话”模式</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">17</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">掘金</span><span class="rank-num ">14</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7612557781271674934" target="_blank" class="news-link">Apple 的 ANE 被挖掘，AI 硬件公开，宣传的 38 TOPS 居然是&quot;数字游戏&quot;？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">18</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">Solidot</span><span class="rank-num ">14</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.solidot.org/story?sid=83686" target="_blank" class="news-link">Zed 编辑器要求用户年满 18 岁才能使用其 AI 功能</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">19</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">V2EX</span><span class="rank-num ">14</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.v2ex.com/t/1196398" target="_blank" class="news-link">写了个小工具： AI 自动生成 Git Commit Message，一行命令安装</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">20</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">华尔街见闻 快讯</span><span class="rank-num ">15</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/livenews/3065348" target="_blank" class="news-link">美国芝加哥联储主席Goolsbee：并不认为人工智能（AI）的应用解释了生产力数据。</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">21</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">靠谱新闻</span><span class="rank-num ">16</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.bbc.com/zhongwen/articles/ce94mxdlxe4o/simp" target="_blank" class="news-link">五角大楼将AI公司Anthropic列为供应链风险，或遭起诉</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">22</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">掘金</span><span class="rank-num ">16</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7612624423943405595" target="_blank" class="news-link">用 GLM + OpenClaw 打造你的 AI PR Review Agent — 让龙虾帮你审代码</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">23</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">远景论坛</span><span class="rank-num ">16</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.pcbeta.com/viewthread-2066028-1-1.html" target="_blank" class="news-link">报告称微软必应搜索被污染，错误推荐恶意 OpenClaw AI 项目</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">24</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">虫部落</span><span class="rank-num ">16</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-23929-1-1.html" target="_blank" class="news-link">字节跳动 AI 海外版</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">25</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">掘金</span><span class="rank-num ">17</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7613716728385929226" target="_blank" class="news-link">现在的AI热潮，恰恰证明了世界就是个草台班子</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">26</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">少数派</span><span class="rank-num ">17</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://sspai.com/post/105484" target="_blank" class="news-link">深度横评：2026 年，AI 生成 PPT 到底进化到什么程度了？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">27</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">少数派</span><span class="rank-num ">18</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://sspai.com/post/105481" target="_blank" class="news-link">我的 AI 工具日常使用与工作流是怎样的？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">28</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">ProductHunt</span><span class="rank-num ">19</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/figr-design-research-simplified/launches/figr-ai?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">Figr AI</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">29</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">澎湃新闻</span><span class="rank-num ">20</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://m.thepaper.cn/newsDetail_forward_32712020" target="_blank" class="news-link">两会专访｜王遵来委员：AI不是中医的颠覆者，是传承创新的加速器</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">30</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">少数派</span><span class="rank-num ">21</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://sspai.com/post/105218" target="_blank" class="news-link">AI 时代的工具本地化：构建稳定、可迁移的数字堡垒</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">31</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">百度热搜</span><span class="rank-num ">22</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.baidu.com/s?wd=%E5%9B%BD%E4%BA%A7AI%E7%9F%AD%E5%89%A7%E3%80%8A%E9%9C%8D%E5%8E%BB%E7%97%85%E3%80%8B%E7%81%AB%E5%88%B0%E6%B5%B7%E5%A4%96" target="_blank" class="news-link">国产AI短剧《霍去病》火到海外</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">32</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">华尔街见闻 最新</span><span class="rank-num ">22</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/articles/3766910" target="_blank" class="news-link">养龙虾，今年最大AI风暴</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">33</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">Hacker News</span><span class="rank-num ">24</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://news.ycombinator.com/item?id=47268391" target="_blank" class="news-link">Labor market impacts of AI: A new measure and early evidence</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">34</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">Hacker News</span><span class="rank-num ">26</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://news.ycombinator.com/item?id=47267947" target="_blank" class="news-link">A standard protocol to handle and discard low-effort, AI-Generated pull requests</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">35</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">掘金</span><span class="rank-num ">27</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7613158639789342755" target="_blank" class="news-link">当赛博皇上给Ai设立三省六部</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">36</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">V2EX</span><span class="rank-num ">28</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.v2ex.com/t/1196336" target="_blank" class="news-link">差点被京东金融的 AI 客服骗了。。</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">37</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">抖音</span><span class="rank-num ">30</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.douyin.com/hot/2421579" target="_blank" class="news-link">AI短剧霍去病持续刷屏</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">38</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">Hacker News</span><span class="rank-num ">30</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://news.ycombinator.com/item?id=47263048" target="_blank" class="news-link">AI and the Ship of Theseus</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">字节跳动 / 腾讯</div>
+                            <div class="word-count hot">13 条</div>
+                        </div>
+                        <div class="word-index">4/12</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">牛客网</span><span class="rank-num top">2</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.nowcoder.com/discuss/858871378441744384" target="_blank" class="news-link">字节java后端开发实习凉经</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">牛客网</span><span class="rank-num ">10</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.nowcoder.com/feed/main/detail/845b444326f24038bbc74bdc3222f39c" target="_blank" class="news-link">腾讯后端一面</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">牛客网</span><span class="rank-num ">11</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.nowcoder.com/feed/main/detail/356a5b5693434aecae6f6d35599c6756" target="_blank" class="news-link">3.4 字节后端开发转正实习二面</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">4</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">牛客网</span><span class="rank-num ">12</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.nowcoder.com/feed/main/detail/e5386581c8be48e590d10d248310fce3" target="_blank" class="news-link">腾讯 一面</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">5</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">远景论坛</span><span class="rank-num ">12</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.pcbeta.com/viewthread-2066037-1-1.html" target="_blank" class="news-link">微信4.1.8普通群众能用不？据说支持mica特效了</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">6</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">牛客网</span><span class="rank-num ">13</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.nowcoder.com/feed/main/detail/ff968bc173e54c57beff1c4d9b3d4fe1" target="_blank" class="news-link">腾讯后端一面面经</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">7</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">牛客网</span><span class="rank-num ">14</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.nowcoder.com/discuss/859081619276038144" target="_blank" class="news-link">3.3春招字节音视频前端一面</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">8</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">IT之家</span><span class="rank-num ">15</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.ithome.com/0/926/697.htm" target="_blank" class="news-link">QQ 鸿蒙版 App 获 9.2.10 版本邀测升级，新增聊天记录支持分类查看等功能</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">9</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">牛客网</span><span class="rank-num ">17</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.nowcoder.com/feed/main/detail/32d210a45bc2462fb5e0b646179c2d75" target="_blank" class="news-link">字节一面</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">10</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">微博</span><span class="rank-num ">19</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://s.weibo.com/weibo?q=%E9%80%90%E7%8E%89%E8%85%BE%E8%AE%AF%E7%88%B1%E5%A5%87%E8%89%BA%E7%83%AD%E5%BA%A6%E5%B7%AE%E8%B7%9D&amp;t=31&amp;band_rank=19&amp;Refer=top" target="_blank" class="news-link">逐玉腾讯爱奇艺热度差距</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">11</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">Solidot</span><span class="rank-num ">20</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.solidot.org/story?sid=83678" target="_blank" class="news-link">TikTok 拒绝端对端加密私信，称会让用户不安全</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">12</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">微博</span><span class="rank-num ">27</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://s.weibo.com/weibo?q=%23%E5%AD%97%E8%8A%82%E8%85%BE%E8%AE%AF%E5%90%8C%E6%97%A5%E6%8A%A2%E4%BA%BA%23&amp;t=31&amp;band_rank=27&amp;Refer=top" target="_blank" class="news-link">字节腾讯同日抢人</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">13</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">华尔街见闻 快讯</span><span class="rank-num ">29</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/livenews/3065329" target="_blank" class="news-link">纳斯达克金龙中国指数盘初涨0.5%。
+
+ETF中，KWEB涨0.48%，CQQQ跌0.50%，ASHR跌0.54%。</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">国产模型</div>
+                            <div class="word-count ">1 条</div>
+                        </div>
+                        <div class="word-index">5/12</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">掘金</span><span class="rank-num ">6</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7612929690669645867" target="_blank" class="news-link">马斯克点赞的小模型：Qwen3.5 私有化部署全攻略（0.8B/2B/4B/9B）</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">微软</div>
+                            <div class="word-count ">1 条</div>
+                        </div>
+                        <div class="word-index">6/12</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">远景论坛</span><span class="rank-num ">18</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.pcbeta.com/viewthread-2066015-1-1.html" target="_blank" class="news-link">求一个 Windows 11 IoTEnterpriseLTSC 26H1 arm的安装包</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">谷歌</div>
+                            <div class="word-count warm">8 条</div>
+                        </div>
+                        <div class="word-index">7/12</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">V2EX</span><span class="rank-num top">1</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.v2ex.com/t/1196436" target="_blank" class="news-link">面向多 Agent 的代码生成工作台，支持 Claude Code、Codex CLI、OpenCode、Gemini CLI 等，支持并行 worktree 开发、MCP 与 Skills 管理，以及 Git/文件/终端一体等</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">V2EX</span><span class="rank-num top">2</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.v2ex.com/t/1196435" target="_blank" class="news-link">花 10 分钟把 claude 和 gemini 拉到同一个飞书群里让他们互相聊天</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">V2EX</span><span class="rank-num high">4</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.v2ex.com/t/1196431" target="_blank" class="news-link">求帮忙参与我的 qbittorrent 安卓端封闭测试（Google Play 要求 20 个测试用户，可互测）</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">4</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">ProductHunt</span><span class="rank-num ">9</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/stitch-by-google?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">Stitch by Google</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">5</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">Solidot</span><span class="rank-num ">13</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.solidot.org/story?sid=83687" target="_blank" class="news-link">父亲起诉 Google 指控其 Gemini 聊天机器人诱导其子自杀</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">6</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">Solidot</span><span class="rank-num ">16</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.solidot.org/story?sid=83684" target="_blank" class="news-link">Google 和 Epic 和解，将降低应用商店佣金比例</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">7</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">ProductHunt</span><span class="rank-num ">16</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/gemini-6/launches/gemini-3-1-pro?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">Gemini 3.1 Pro</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">8</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">掘金</span><span class="rank-num ">30</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7612895343768879114" target="_blank" class="news-link">Android 组件化架构从零搭建指南</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">苹果</div>
+                            <div class="word-count ">3 条</div>
+                        </div>
+                        <div class="word-index">8/12</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">V2EX</span><span class="rank-num ">6</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.v2ex.com/t/1196426" target="_blank" class="news-link">春节做了一个图片打码的 ios app，一键智能打码保护隐私，送 20 个 Pro 版兑换码</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">Solidot</span><span class="rank-num ">19</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.solidot.org/story?sid=83680" target="_blank" class="news-link">苹果推出起售价 4599 元的低价笔记本电脑 MacBook Neo</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">少数派</span><span class="rank-num ">25</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://sspai.com/post/105047" target="_blank" class="news-link">将旧 iPad 物尽其用，我把它变成了一个智能天气时钟</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">特斯拉</div>
+                            <div class="word-count ">2 条</div>
+                        </div>
+                        <div class="word-index">9/12</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">IT之家</span><span class="rank-num ">6</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.ithome.com/0/926/707.htm" target="_blank" class="news-link">消息称特斯拉已清空加拿大市场 Model 3 库存，并将剩余美制车型全部运回美国</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">少数派</span><span class="rank-num ">9</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://sspai.com/post/106020" target="_blank" class="news-link">从特斯拉一日自驾，看纯电在日本的实际体验</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">OpenAI</div>
+                            <div class="word-count hot">18 条</div>
+                        </div>
+                        <div class="word-index">10/12</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">bilibili 热搜</span><span class="rank-num high">4</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://search.bilibili.com/all?keyword=OpenClaw%E5%AE%98%E6%96%B9%E8%B4%A6%E5%8F%B7%E5%85%A5%E9%A9%BBB%E7%AB%99" target="_blank" class="news-link">OpenClaw官方账号入驻B站</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">牛客网</span><span class="rank-num ">6</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.nowcoder.com/discuss/859041310064275456" target="_blank" class="news-link">面试官视角聊聊：小龙虾OpenClaw如何0基础上手？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">V2EX</span><span class="rank-num ">8</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.v2ex.com/t/1196418" target="_blank" class="news-link">3 月开始截止到今天，用 OpenClaw 赚了 4100 块钱，说说体会</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">4</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">掘金</span><span class="rank-num ">9</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7613330850858467354" target="_blank" class="news-link">OpenClaw：从“19万星标”到“行业封杀”，这只“赛博龙虾”究竟触动了谁的神经？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">5</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">掘金</span><span class="rank-num ">10</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7612950377994551348" target="_blank" class="news-link">OpenClaw部署后Tools工具权限被禁用？一行配置解决</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">6</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">IT之家</span><span class="rank-num ">11</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.ithome.com/0/926/701.htm" target="_blank" class="news-link">努比亚张雷透露 Z80 Ultra 将从底层和 OpenClaw 深度融合，每次交互、执行都是手机系统本身能力</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">7</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">掘金</span><span class="rank-num ">11</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7613330850830843954" target="_blank" class="news-link">OpenClaw 从零配置指南：接入飞书 + 常用命令 + 原理图解</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">8</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">掘金</span><span class="rank-num ">15</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7613274190879768611" target="_blank" class="news-link">OpenClaw 帮我睡后全自动完成了老板交代的任务</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">9</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">V2EX</span><span class="rank-num ">15</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.v2ex.com/t/1196394" target="_blank" class="news-link">简单体验了一下 openClaw，说说自己的看法</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">10</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">Solidot</span><span class="rank-num ">17</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.solidot.org/story?sid=83683" target="_blank" class="news-link">百万消费者抵制 ChatGPT</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">11</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">V2EX</span><span class="rank-num ">17</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.v2ex.com/t/1196381" target="_blank" class="news-link">转发给 OpenClaw，我就去睡觉了</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">12</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">微博</span><span class="rank-num ">18</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://s.weibo.com/weibo?q=OpenClaw%E7%88%86%E7%81%AB&amp;t=31&amp;band_rank=18&amp;Refer=top" target="_blank" class="news-link">OpenClaw爆火</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">13</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">掘金</span><span class="rank-num ">20</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7613555403787911206" target="_blank" class="news-link">玩转龙虾🦞，openclaw 核心命令行收藏（持续更新）v2026.3.2</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">14</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">掘金</span><span class="rank-num ">21</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7613590357511307302" target="_blank" class="news-link">OpenClaw 完整教程！从安装到使用（官方脚本版）</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">15</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">掘金</span><span class="rank-num ">25</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7613196529567285299" target="_blank" class="news-link">用Openclaw+Obsidian搭建内容工厂，写100W+阅读爆文，单篇6000元</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">16</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">V2EX</span><span class="rank-num ">26</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.v2ex.com/t/1196344" target="_blank" class="news-link">用了 OpenClaw 后发现，最后还是人便宜</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">17</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">掘金</span><span class="rank-num ">28</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7613680097548795919" target="_blank" class="news-link">再见 Openclaw，桌面端 Agent 起飞了！</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">18</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">掘金</span><span class="rank-num ">29</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7613015638243885098" target="_blank" class="news-link">openclaw飞书流式回复配置指南</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">Claude</div>
+                            <div class="word-count ">4 条</div>
+                        </div>
+                        <div class="word-index">11/12</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">ProductHunt</span><span class="rank-num ">8</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/claude?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">Claude Import Memory</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">Hacker News</span><span class="rank-num ">11</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://news.ycombinator.com/item?id=47273854" target="_blank" class="news-link">Hardening Firefox with Anthropic&#x27;s Red Team</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">ProductHunt</span><span class="rank-num ">11</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/claude?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">Claude in PowerPoint</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">4</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">少数派</span><span class="rank-num ">20</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://sspai.com/post/105331" target="_blank" class="news-link">普通人更要多动手：聊聊我把 Claude Code 变成个人助手后的那些事</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">F1</div>
+                            <div class="word-count ">2 条</div>
+                        </div>
+                        <div class="word-index">12/12</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">IT之家</span><span class="rank-num high">4</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.ithome.com/0/926/709.htm" target="_blank" class="news-link">消息称法拉利正开发“FUV”Purosangue 高性能版，剑指更高价格层级</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">bilibili 热搜</span><span class="rank-num ">20</span><span class="time-info">00:05</span>
+                            </div>
+                            <div class="news-title"><a href="https://search.bilibili.com/all?keyword=F1%E6%BE%B3%E5%A4%A7%E5%88%A9%E4%BA%9A%E5%A4%A7%E5%A5%96%E8%B5%9B%E4%B8%80%E7%BB%83%E9%9B%86%E9%94%A6" target="_blank" class="news-link">F1澳大利亚大奖赛一练集锦</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                <div class="section-divider ai-section">
+                    <div class="ai-section-header">
+                        <div class="ai-section-title">✨ AI 热点分析</div>
+                        <span class="ai-section-badge">AI</span>
+                    </div>
+                    <div class="ai-block">
+                        <div class="ai-block-title">核心热点态势</div>
+                        <div class="ai-block-content">全网霸屏的AI热潮呈现两极分化：技术社区聚焦OpenClaw工具链实战（掘金6条教程上榜），大众平台热议AI短剧工业化（抖音/百度3条破圈）。<br><br>【宏观主线】：<br>AI应用进入深水区，从工具使用转向工作流重构。OpenClaw在飞书/终端/代码审查场景的15条实战指南，与「破5亿播放成本仅3000」形成产业级效率革命叙事。<br><br>【热度可持续性】：<br>OpenClaw生态呈现早期爆发特征（8条部署教程+4条商业变现），但微软Copilot「真话模式」下线事件预示监管风险正在累积。</div>
+                    </div>
+                    <div class="ai-block">
+                        <div class="ai-block-title">舆论风向争议</div>
+                        <div class="ai-block-content">【情绪光谱】<br>技术乐观主义（牛客网AI面试指南霸榜）与伦理担忧（Gemini诱导自杀诉讼）形成断层。<br><br>1. 职场焦虑：简历AI项目经验成新刚需（牛客网3条TOP4），但「AI生成PR被拒」事件暴露工具滥用风险<br><br>2. 价值冲突：五角大楼将Anthropic列为供应链风险，与「AI中医加速器」提案形成国家安全VS民生改善的认知撕裂</div>
+                    </div>
+                    <div class="ai-block">
+                        <div class="ai-block-title">异动与弱信号</div>
+                        <div class="ai-block-content">【跨平台共振】<br>OpenClaw完成技术→大众破圈：B站官方号入驻（4位）+微博热搜（18位）+掘金9篇教程，72小时内实现开发者→普通用户传导<br><br>【轨迹突变】<br>「AI短剧霍去病」在抖音（30位）与百度（22位）形成传播温差，暗示算法推荐差异下的文化输出新路径<br><br>【弱信号捕捉】<br>谷歌Gemini3.1 Pro（ProductHunt16位）与Claude工具（8位）在开发者社区静默渗透，多Agent协作工具链或成下一战场</div>
+                    </div>
+                    <div class="ai-block">
+                        <div class="ai-block-title">RSS 深度洞察</div>
+                        <div class="ai-block-content">暂无RSS数据</div>
+                    </div>
+                    <div class="ai-block">
+                        <div class="ai-block-title">研判策略建议</div>
+                        <div class="ai-block-content">1. 投资者：重点监控OpenClaw开源协议变更风险，关注配套工具链（如飞书集成方案）的Pre-A轮融资机会<br><br>2. 品牌方：立即优化AI面试评价体系，在牛客网等平台投放RAG技术白皮书化解职场焦虑<br><br>3. 公众：警惕「3000元拍短剧」幸存者偏差，优先掌握OpenClaw+Obsidian等组合技能应对AI失业冲击</div>
+                    </div>
+                    <div class="ai-block">
+                        <div class="ai-block-title">独立源点速览</div>
+                        <div class="ai-block-content">[Hacker News]:<br>学术视角主导AI讨论，劳工市场影响研究（24位）与Theseus之船哲学思辨（30位）反映技术反思思潮。代码提交流程标准化提案（26位）获142点支持，预示开源社区治理规则面临重构<br><br>[ProductHunt]:<br>AI工具垂直化趋势明显，心理治疗应用Lovon（5位）与PPT插件Claude（11位）占据头部，Stitch设计工具（9位）显示谷歌在创意领域持续加码</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer">
+                <div class="footer-content">
+                    由 <span class="project-name">TrendRadar</span> 生成 ·
+                    <a href="https://github.com/sansan0/TrendRadar" target="_blank" class="footer-link">
+                        GitHub 开源项目
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            async function saveAsImage() {
+                const button = event.target;
+                const originalText = button.textContent;
+
+                try {
+                    button.textContent = '生成中...';
+                    button.disabled = true;
+                    window.scrollTo(0, 0);
+
+                    // 等待页面稳定
+                    await new Promise(resolve => setTimeout(resolve, 200));
+
+                    // 截图前隐藏按钮
+                    const buttons = document.querySelector('.save-buttons');
+                    buttons.style.visibility = 'hidden';
+
+                    // 再次等待确保按钮完全隐藏
+                    await new Promise(resolve => setTimeout(resolve, 100));
+
+                    const container = document.querySelector('.container');
+
+                    const canvas = await html2canvas(container, {
+                        backgroundColor: '#ffffff',
+                        scale: 1.5,
+                        useCORS: true,
+                        allowTaint: false,
+                        imageTimeout: 10000,
+                        removeContainer: false,
+                        foreignObjectRendering: false,
+                        logging: false,
+                        width: container.offsetWidth,
+                        height: container.offsetHeight,
+                        x: 0,
+                        y: 0,
+                        scrollX: 0,
+                        scrollY: 0,
+                        windowWidth: window.innerWidth,
+                        windowHeight: window.innerHeight
+                    });
+
+                    buttons.style.visibility = 'visible';
+
+                    const link = document.createElement('a');
+                    const now = new Date();
+                    const filename = `TrendRadar_热点新闻分析_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}.png`;
+
+                    link.download = filename;
+                    link.href = canvas.toDataURL('image/png', 1.0);
+
+                    // 触发下载
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                    button.textContent = '保存成功!';
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.disabled = false;
+                    }, 2000);
+
+                } catch (error) {
+                    const buttons = document.querySelector('.save-buttons');
+                    buttons.style.visibility = 'visible';
+                    button.textContent = '保存失败';
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.disabled = false;
+                    }, 2000);
+                }
+            }
+
+            async function saveAsMultipleImages() {
+                const button = event.target;
+                const originalText = button.textContent;
+                const container = document.querySelector('.container');
+                const scale = 1.5;
+                const maxHeight = 5000 / scale;
+
+                try {
+                    button.textContent = '分析中...';
+                    button.disabled = true;
+
+                    // 获取所有可能的分割元素
+                    const newsItems = Array.from(container.querySelectorAll('.news-item'));
+                    const wordGroups = Array.from(container.querySelectorAll('.word-group'));
+                    const newSection = container.querySelector('.new-section');
+                    const errorSection = container.querySelector('.error-section');
+                    const header = container.querySelector('.header');
+                    const footer = container.querySelector('.footer');
+
+                    // 计算元素位置和高度
+                    const containerRect = container.getBoundingClientRect();
+                    const elements = [];
+
+                    // 添加header作为必须包含的元素
+                    elements.push({
+                        type: 'header',
+                        element: header,
+                        top: 0,
+                        bottom: header.offsetHeight,
+                        height: header.offsetHeight
+                    });
+
+                    // 添加错误信息（如果存在）
+                    if (errorSection) {
+                        const rect = errorSection.getBoundingClientRect();
+                        elements.push({
+                            type: 'error',
+                            element: errorSection,
+                            top: rect.top - containerRect.top,
+                            bottom: rect.bottom - containerRect.top,
+                            height: rect.height
+                        });
+                    }
+
+                    // 按word-group分组处理news-item
+                    wordGroups.forEach(group => {
+                        const groupRect = group.getBoundingClientRect();
+                        const groupNewsItems = group.querySelectorAll('.news-item');
+
+                        // 添加word-group的header部分
+                        const wordHeader = group.querySelector('.word-header');
+                        if (wordHeader) {
+                            const headerRect = wordHeader.getBoundingClientRect();
+                            elements.push({
+                                type: 'word-header',
+                                element: wordHeader,
+                                parent: group,
+                                top: groupRect.top - containerRect.top,
+                                bottom: headerRect.bottom - containerRect.top,
+                                height: headerRect.height
+                            });
+                        }
+
+                        // 添加每个news-item
+                        groupNewsItems.forEach(item => {
+                            const rect = item.getBoundingClientRect();
+                            elements.push({
+                                type: 'news-item',
+                                element: item,
+                                parent: group,
+                                top: rect.top - containerRect.top,
+                                bottom: rect.bottom - containerRect.top,
+                                height: rect.height
+                            });
+                        });
+                    });
+
+                    // 添加新增新闻部分
+                    if (newSection) {
+                        const rect = newSection.getBoundingClientRect();
+                        elements.push({
+                            type: 'new-section',
+                            element: newSection,
+                            top: rect.top - containerRect.top,
+                            bottom: rect.bottom - containerRect.top,
+                            height: rect.height
+                        });
+                    }
+
+                    // 添加footer
+                    const footerRect = footer.getBoundingClientRect();
+                    elements.push({
+                        type: 'footer',
+                        element: footer,
+                        top: footerRect.top - containerRect.top,
+                        bottom: footerRect.bottom - containerRect.top,
+                        height: footer.offsetHeight
+                    });
+
+                    // 计算分割点
+                    const segments = [];
+                    let currentSegment = { start: 0, end: 0, height: 0, includeHeader: true };
+                    let headerHeight = header.offsetHeight;
+                    currentSegment.height = headerHeight;
+
+                    for (let i = 1; i < elements.length; i++) {
+                        const element = elements[i];
+                        const potentialHeight = element.bottom - currentSegment.start;
+
+                        // 检查是否需要创建新分段
+                        if (potentialHeight > maxHeight && currentSegment.height > headerHeight) {
+                            // 在前一个元素结束处分割
+                            currentSegment.end = elements[i - 1].bottom;
+                            segments.push(currentSegment);
+
+                            // 开始新分段
+                            currentSegment = {
+                                start: currentSegment.end,
+                                end: 0,
+                                height: element.bottom - currentSegment.end,
+                                includeHeader: false
+                            };
+                        } else {
+                            currentSegment.height = potentialHeight;
+                            currentSegment.end = element.bottom;
+                        }
+                    }
+
+                    // 添加最后一个分段
+                    if (currentSegment.height > 0) {
+                        currentSegment.end = container.offsetHeight;
+                        segments.push(currentSegment);
+                    }
+
+                    button.textContent = `生成中 (0/${segments.length})...`;
+
+                    // 隐藏保存按钮
+                    const buttons = document.querySelector('.save-buttons');
+                    buttons.style.visibility = 'hidden';
+
+                    // 为每个分段生成图片
+                    const images = [];
+                    for (let i = 0; i < segments.length; i++) {
+                        const segment = segments[i];
+                        button.textContent = `生成中 (${i + 1}/${segments.length})...`;
+
+                        // 创建临时容器用于截图
+                        const tempContainer = document.createElement('div');
+                        tempContainer.style.cssText = `
+                            position: absolute;
+                            left: -9999px;
+                            top: 0;
+                            width: ${container.offsetWidth}px;
+                            background: white;
+                        `;
+                        tempContainer.className = 'container';
+
+                        // 克隆容器内容
+                        const clonedContainer = container.cloneNode(true);
+
+                        // 移除克隆内容中的保存按钮
+                        const clonedButtons = clonedContainer.querySelector('.save-buttons');
+                        if (clonedButtons) {
+                            clonedButtons.style.display = 'none';
+                        }
+
+                        tempContainer.appendChild(clonedContainer);
+                        document.body.appendChild(tempContainer);
+
+                        // 等待DOM更新
+                        await new Promise(resolve => setTimeout(resolve, 100));
+
+                        // 使用html2canvas截取特定区域
+                        const canvas = await html2canvas(clonedContainer, {
+                            backgroundColor: '#ffffff',
+                            scale: scale,
+                            useCORS: true,
+                            allowTaint: false,
+                            imageTimeout: 10000,
+                            logging: false,
+                            width: container.offsetWidth,
+                            height: segment.end - segment.start,
+                            x: 0,
+                            y: segment.start,
+                            windowWidth: window.innerWidth,
+                            windowHeight: window.innerHeight
+                        });
+
+                        images.push(canvas.toDataURL('image/png', 1.0));
+
+                        // 清理临时容器
+                        document.body.removeChild(tempContainer);
+                    }
+
+                    // 恢复按钮显示
+                    buttons.style.visibility = 'visible';
+
+                    // 下载所有图片
+                    const now = new Date();
+                    const baseFilename = `TrendRadar_热点新闻分析_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+
+                    for (let i = 0; i < images.length; i++) {
+                        const link = document.createElement('a');
+                        link.download = `${baseFilename}_part${i + 1}.png`;
+                        link.href = images[i];
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+
+                        // 延迟一下避免浏览器阻止多个下载
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+
+                    button.textContent = `已保存 ${segments.length} 张图片!`;
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.disabled = false;
+                    }, 2000);
+
+                } catch (error) {
+                    console.error('分段保存失败:', error);
+                    const buttons = document.querySelector('.save-buttons');
+                    buttons.style.visibility = 'visible';
+                    button.textContent = '保存失败';
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.disabled = false;
+                    }, 2000);
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                window.scrollTo(0, 0);
+            });
+        </script>
+    </body>
+    </html>
+    
